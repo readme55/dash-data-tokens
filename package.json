@@ -1,0 +1,25 @@
+{
+  "name": "sample-dapps",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+	"deploy": "node node_modules/gh-pages/bin/gh-pages.js -d src/",
+	"gh-pages-clean": "node node_modules/gh-pages/bin/gh-pages-clean",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/readme55/sample-dapps.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/readme55/sample-dapps/issues"
+  },
+  "homepage": "https://github.com/readme55/sample-dapps#readme",
+  "dependencies": {
+    "gh-pages": "^3.1.0"
+  }
+}

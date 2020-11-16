@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="">
+  <meta name="generator" content="">
+  <!-- Primary Meta Tags -->
+<title>Dash Platform Sample Dapps</title>
+<meta name="title" content="Dash Platform Sample Dapps">
+<meta name="description" content="Collection of simple Dash Platform Dapps to showcase how they can be implemented using Simple-Dapp-Signing Algorithm.">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="http://readme.dashdevs.org/sample-dapps/">
+<meta property="og:title" content="Dash Platform Sample Dapps">
+<meta property="og:description" content="Collection of simple Dash Platform Dapps to showcase how they can be implemented using Simple-Dapp-Signing Algorithm.">
+<meta property="og:image" content="https://raw.githubusercontent.com/readme55/sample-dapps/main/meta.png">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="http://readme.dashdevs.org/sample-dapps/">
+<meta property="twitter:title" content="Dash Platform Sample Dapps">
+<meta property="twitter:description" content="Collection of simple Dash Platform Dapps to showcase how they can be implemented using Simple-Dapp-Signing Algorithm.">
+<meta property="twitter:image" content="https://raw.githubusercontent.com/readme55/sample-dapps/main/meta.png">
+  <title>Dash Platform Sample Dapps</title>
+
+  <!-- <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/jumbotron/"> -->
+
+  <!-- Bootstrap core CSS -->
+  <!-- <link href="./assets/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+
+
+  <style>
+    .jumbotron {
+      /* background: rgb(206, 206, 206); */
+    }
+
+    body {
+      /* background-image: url("./assets/img/dash-d-rounded-square.svg");
+      background-repeat: no-repeat;
+      background-size: auto;
+      background-position: center; */
+      background: rgb(255, 255, 255);
+
+    }
+
+    .container {
+      /* background: rgb(255, 255, 120); */
+      /* opacity: 0.92; */
+    }
+
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+  </style>
+  <!-- Custom styles for this template -->
+  <link href="jumbotron.css" rel="stylesheet">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">Sample Dapps by readme</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+      aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="./Tokens.html">Tokens</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="./Test.html">Test</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="./Dao.html">Dao</a>
+        </li>
+        <!-- <li class="nav-item">
+          <a class="nav-link disabled" href="#">Disabled</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="false">Dropdown</a>
+          <div class="dropdown-menu" aria-labelledby="dropdown01">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li> -->
+      </ul>
+      <form class="form-inline my-2 my-lg-0">
+        <!-- <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search"> -->
+        <!-- <button class="btn btn-success my-2 my-sm-0" type="submit">Sign in</button> -->
+        <form action="./Sign-in.html">
+          <!-- <button class="btn btn-success my-2 my-sm-0" type="submit">Sign in</button> -->
+          <!-- <input type="button" onclick="location.href='https://google.com';" value="Go to Google" /> -->
+          <input id="signinbutton" class="btn btn-success my-2 my-sm-0" type="button"
+            onclick="location.href='./Sign-in.html';" value="Sign in">
+        </form>
+      </form>
+    </div>
+  </nav>
+
+  <main role="main">
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1 class="display-3">Dash Platform Sample Dapps</h1>
+        <p>This is a collection of simple <a href="https://dashplatform.readme.io/docs/introduction-what-is-dash-platform" target="_blank">Dash Platform</a> Dapps to showcase how they can be implemented by third-party
+          developers. These samples use the "Simple Dapp Signing" algorithm implemented by <a
+            href="https://github.com/readme55/Dash-Chrome-Wallet" target="_blank">Chrome Wallet</a>. <b>This is not an
+            official solution!</b><br><br>
+          Checkout the <a href="https://github.com/readme55/sample-dapps" target="_blank">Dash Sample Dapps</a> GitHub repository to
+          learn how to develop your own Dapp using the same method then these samples <a
+            href="https://github.com/readme55/sample-dapps/blob/master/src/note-dapp.js"
+            target="_blank">e.g. note-dapp.js</a>.<br><br>
+          <b>Instructions:</b><br>
+          1. Activate the "Simple Dapp Signing" switch in Chrome Wallet<br>
+          2. On this website Sign-In using the button in upper right corner, enter your registered Username (from Chrome Wallet) and
+          press "Sign-in"<br>
+          3. Receive a confirmation dialog from Chrome Wallet and confirm it. You should now be logged in and ready to
+          start a Dapp.
+        </p>
+        <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Note</h2>
+          <p>Simple Note Dapp as sample for saving documents on Dash Platform using your Dash Username.
+            The deployed data-contract uses objects for date, title, text and encryption status.
+            To use this dapp you need to "Sign in" and then start the Note-Dapp.
+            Create the note, press "Submit" on the webpage and wait for Chrome Wallet dialog to appear. Then confirm the
+            dialog message.
+          </p>
+          <p><a class="btn btn-secondary" href="./Note.html" role="button">Start &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+          <h2>PayMe</h2>
+          <p>PayMe is a simple example to submit a payment requested from a website to Chrome Wallet.
+            It uses your Dash Username and you just have to "Confirm" the payment request in the Wallet after
+            submission.
+          </p>
+          <p><a class="btn btn-secondary" href="./PayMe.html" role="button">Start &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+          <h2>Pet Shop</h2>
+          <p>Pet Shop is a Dash Platform port of the famous Ethereum Dapp example.</p>
+          <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p>
+        </div>
+      </div>
+
+      <hr>
+
+    </div> <!-- /container -->
+
+  </main>
+
+  <footer class="container">
+    <p>&copy; readme 2020</p>
+  </footer>
+  <!-- <script src="./assets/js/jquery-slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+  <script src="./assets/js/jquery-slim.min.js"></script>
+  <!-- <script>window.jQuery || document.write('<script src="/docs/4.3/assets/js/vendor/jquery-slim.min.js"><\/script>')</script><script src="/docs/4.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o" crossorigin="anonymous"></script></body> -->
+  <script>window.jQuery || document.write('<script src="./assets/js/jquery-slim.min.js"><\/script>')</script>
+  <!-- <script src="./assets/js/bootstrap.bundle.min.js" integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o" crossorigin="anonymous"></script> -->
+  <script src="./assets/js/bootstrap.bundle.min.js"></script>
+  <script src="./index.js"></script>
+</body>
+
+</html>
