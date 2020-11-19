@@ -1,4 +1,5 @@
-// 4th 946mB3VPhRCBNhJbXGvuR9YqpHaXPbUr3GvpqsKTnSN7
+// v1 4th: 946mB3VPhRCBNhJbXGvuR9YqpHaXPbUr3GvpqsKTnSN7
+// v2 5th: 
 
 // cloud identID: AfZxsSWVKxDpHkXHQDqhEbyZYmfNcAgKq76TLCab4ZiD
 // dappuser identID: 72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp
@@ -12,20 +13,34 @@ $(document).ready(function () {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username)
     }
-    var localLastDocTX = -1;
-    var localLastDeposits = [];
-    var localUserBalance = 0;
+    var indexesWithdrawals = [];
+    var indexesDeposits = [];
+    var localUserBalance = 0.0;
+
+    // set buttons after load
+    $("#receiveBtn").prop('disabled', true);
+    $("#sendBtn").prop('disabled', true);
 
     // $("#formTokenContract").val("946mB3VPhRCBNhJbXGvuR9YqpHaXPbUr3GvpqsKTnSN7");
     $("#formTokenContract").change(function () {
-        if ($("#formTokenContract").val() != "") {  // if contract id input field is empty
-            $("#createBtn").prop('disabled', true);
-            $("#initBtn").prop('disabled', true);
-            $("#sendBtn").prop('disabled', true);
-        } else {
+        if ($("#formTokenContract").val() == "") {  // if contract input field is empty
             $("#createBtn").prop('disabled', false);
             $("#initBtn").prop('disabled', false);
+            $("#receiveBtn").prop('disabled', true);
             $("#sendBtn").prop('disabled', true);
+            $("#formTokenName").prop('readonly', false);
+            $("#formTokenSymbol").prop('readonly', false);
+            $("#formTokenAmount").prop('readonly', false);
+            $("#formTokenDecimals").prop('readonly', false);
+        } else {    // if filled
+            $("#createBtn").prop('disabled', true);
+            $("#initBtn").prop('disabled', true);
+            $("#receiveBtn").prop('disabled', false);
+            $("#sendBtn").prop('disabled', true);
+            $("#formTokenName").prop('readonly', true);
+            $("#formTokenSymbol").prop('readonly', true);
+            $("#formTokenAmount").prop('readonly', true);
+            $("#formTokenDecimals").prop('readonly', true);
         }
     });
 
@@ -50,44 +65,73 @@ $(document).ready(function () {
                     // {
                     //   "properties": [{ "txnr": "asc" }], "unique": true
                     // },
+                    // {
+                    //     "properties": [{ "transferFrom": "asc" }], "unique": false
+                    // },
                     {
-                        "properties": [{ "depositAddress": "asc" }], "unique": false
+                        "properties": [{ "$ownerId": "asc" }], "unique": false
                     },
                     {
-                        "properties": [{ "withdrawAddress": "asc" }], "unique": false
+                        "properties": [{ "$createdAt": "asc" }], "unique": false
+                    },
+                    {
+                        "properties": [{ "transferFrom": "asc" }], "unique": false
+                    },
+                    {
+                        "properties": [{ "transferTo": "asc" }], "unique": false
                     },
                 ],
                 properties: {
-                    tokenName: {
+                    version: {
+                        type: "integer"
+                    },
+                    name: {
                         type: "string"
                     },
-                    balance: {
+                    symbol: {
+                        type: "string"
+                    },
+                    decimals: {
+                        type: "integer"
+                    },
+                    // totalSupply: {
+                    //     type: "integer"
+                    // },
+                    transferFrom: {
+                        type: "string",
+                        maxLength: 44
+                    },
+                    transferTo: {
+                        type: "string",
+                        maxLength: 44
+                    },
+                    transferAmount: {
                         type: "number"
                     },
-                    withdrawAmount: {
-                        type: "number"
+                    approveAddress: {
+                        type: "string"
                     },
                     // txnr: {
                     //     type: "integer",
                     //     "maxLength": 100000
                     // },
-                    depositAddress: {
-                        type: "string",
-                        "maxLength": 50
+                    // depositAddress: {
+                    //     type: "string",
+                    //     "maxLength": 50
+                    // },
+                    balance: {
+                        type: "number"
                     },
-                    withdrawAddress: {
-                        type: "string",
-                        "maxLength": 50
-                    },
-                    lastValidWithdrawIndex: {
+                    lastValIndTransferTo: {
                         type: "integer",
-                        "maxLength": 50
+                        maxLength: 5
                     },
-                    lastValidDepositIndex: {
+                    lastValIndTransferFrom: {
                         type: "integer",
-                        "maxLength": 50
+                        maxLength: 5
                     },
                 },
+                required: ["$createdAt", "$updatedAt"],
                 additionalProperties: false
             }
         };
@@ -157,13 +201,17 @@ $(document).ready(function () {
                 const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
 
                 var jsonInitTX = {
-                    tokenName: $("#formTokenName").val(),
-                    balance: 0,
-                    withdrawAmount: Number($("#formTokenAmount").val()),
-                    depositAddress: 'genesis document', // could use same identityId then dataContract creator and initiator...
-                    withdrawAddress: '72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp',    // dappuser identityId TODO: fetch auto
-                    lastValidWithdrawIndex: -1,
-                    lastValidDepositIndex: -1
+                    version: 1,
+                    name: $("#formTokenName").val(),
+                    symbol: $("#formTokenSymbol").val(),
+                    decimals: $("#formTokenDecimals").val(),
+                    transferFrom: 'genesis document',   // could force check same identityId then dataContract creator and initiator...
+                    transferTo: identityId,    // dapp login user identityId
+                    transferAmount: Number($("#formTokenAmount").val()),
+                    approveAddress: '',
+                    balance: 0.0,
+                    lastValIndTransferTo: -1,
+                    lastValIndTransferFrom: -1
                 }
 
                 var strInitTx = JSON.stringify(jsonInitTX);
@@ -216,12 +264,12 @@ $(document).ready(function () {
 
         const tokenContract = $("#formTokenContract").val();
         const tokenName = $("#formTokenName").val();
-        const tokenAmount = Number($("#formSendAmount").val());
-        const tokenWithdraw = $("#formWithdrawUser").val();
-        const tokenDeposit = identityId;    // dappuser identityId TODO: fetch auto
+        const tokenTransferFrom = identityId;    // dappuser identityId TODO: fetch auto
+        const tokenTransferTo = $("#formWithdrawUser").val();
+        const tokenTransferAmount = Number($("#formSendAmount").val());
         const tokenBalance = Number($("#formBalance").val());
 
-        console.log(tokenWithdraw)
+        console.log(tokenTransferTo)
 
         var clientOpts = {};
         clientOpts.network = 'evonet';
@@ -238,13 +286,13 @@ $(document).ready(function () {
                 const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
 
                 var jsonInitTX = {
-                    tokenName: tokenName,
+                    name: tokenName,
+                    transferFrom: tokenTransferFrom,
+                    transferTo: tokenTransferTo,
+                    transferAmount: tokenTransferAmount,
                     balance: tokenBalance,
-                    withdrawAmount: tokenAmount,
-                    depositAddress: tokenDeposit,
-                    withdrawAddress: tokenWithdraw,
-                    lastValidWithdrawIndex: localLastDocTX,
-                    lastValidDepositIndex: localLastDeposits[0]
+                    lastValIndTransferTo: indexesWithdrawals[0],
+                    lastValIndTransferFrom: indexesDeposits[0]
                 }
 
                 var strInitTx = JSON.stringify(jsonInitTX);
@@ -258,7 +306,7 @@ $(document).ready(function () {
                     timestamp: new Date().toUTCString(),
                     STcontract: tokenContract,
                     STdocument: 'token',
-                    // STcontent: '{ "tokenName" : "' + tokenName + '", "balance" : ' + tokenBalance + ', "withdrawAmount" : ' + tokenAmount + ', "withdrawAddress" : "' + tokenWithdraw + '", "depositAddress" : "' + tokenDeposit + '"}'
+                    // STcontent: '{ "tokenName" : "' + tokenName + '", "balance" : ' + tokenBalance + ', "transferAmount" : ' + tokenAmount + ', "transferTo" : "' + tokenWithdraw + '", "transferFrom" : "' + tokenDeposit + '"}'
                     STcontent: strInitTx
                 }
 
@@ -281,7 +329,7 @@ $(document).ready(function () {
                 console.error('Something went wrong:', e);
                 return;
             } finally {
-                console.log("Send DS-Request: Send Token Amount " + tokenAmount + " from address " + tokenDeposit + " to address " + tokenWithdraw)
+                console.log("Send DS-Request: Send Token Amount " + tokenTransferAmount + " from address " + tokenTransferFrom + " to address " + tokenTransferTo)
                 // client.disconnect();
             }
 
@@ -335,22 +383,25 @@ $(document).ready(function () {
                 console.log("ERROR: Empty Token Contract, needs to get initialized")
                 return; // will jump to "finally section"
             }
-            if (docs[0].data.tokenName == undefined) {
-                console.log("ERROR: Token Name is undefined in Token Contract")
+            if (docs[0].data.name == undefined) {
+                console.log("ERROR: Token Name is undefined in Token Contract genesis document")
             } else {
-                $("#formTokenName").val(docs[0].data.tokenName)
-                $("#formTokenAmount").val(docs[0].data.withdrawAmount)
+                $("#formTokenName").val(docs[0].data.name)
+                $("#formTokenSymbol").val(docs[0].data.symbol)
+                $("#formTokenAmount").val(docs[0].data.transferAmount)
+                $("#formTokenDecimals").val(docs[0].data.decimals)
             }
 
             console.log("contract document length: " + docslen)
 
-            if (docs[0].data.depositAddress == "genesis document") {
+            // TODO: Validate genesis document
+            if (docs[0].data.transferFrom == "genesis document") {
                 console.log("Validate: genesis document found");
             } else {
                 console.log("Validate: FALSE (genesis document found)");
             }
 
-            // const initAmount = docs[0].data.withdrawAmount;
+            // const initAmount = docs[0].data.transferAmount;
             var validDocs = [];
             for (var i = 0; i < docslen; i++) {
                 validDocs.push(true);
@@ -359,29 +410,29 @@ $(document).ready(function () {
             // validate all documents, skip genesis
             for (var i = 1; i < docslen; i++) {
 
-                // validate withdrawAmount >= zero
-                if (docs[i].data.withdrawAmount >= 0) {
-                    // console.log("Validate: withdrawAmount >= 0 " + i)
+                // validate transferAmount >= zero
+                if (docs[i].data.transferAmount >= 0) {
+                    // console.log("Validate: transferAmount >= 0 " + i)
                 } else {
-                    console.log("Validate: FALSE (withdrawAmount >= 0) at index " + i)
+                    console.log("Validate: FALSE (transferAmount >= 0) at index " + i)
                     validDocs[i] = false;
                     continue;
                 }
 
-                // validate balance >= withdrawAmount
-                if (docs[i].data.balance >= docs[i].data.withdrawAmount) {
-                    // console.log("Validate: balance >= withdrawAmount " + i)
+                // validate balance >= transferAmount
+                if (docs[i].data.balance >= docs[i].data.transferAmount) {
+                    // console.log("Validate: balance >= transferAmount " + i)
                 } else {
-                    console.log("Validate: FALSE (balance >= withdrawAmount) at index " + i)
+                    console.log("Validate: FALSE (balance >= transferAmount) at index " + i)
                     validDocs[i] = false;
                     continue;
                 }
 
-                // validate document owner id == depositAddress // TODO remove depositAddress
-                if (docs[i].ownerId.toString() == docs[i].data.depositAddress) {
-                    // console.log("Validate: depositAddress == document ownerId " + i)
+                // validate document owner id == transferFrom
+                if (docs[i].ownerId.toString() == docs[i].data.transferFrom) {
+                    console.log("Validate: transferFrom == document ownerId " + i)
                 } else {
-                    console.log("Validate: FALSE depositAddress == document ownerId " + i)
+                    console.log("Validate: FALSE transferFrom == document ownerId " + i)
                     validDocs[i] = false;
                     continue;
                 }
@@ -420,13 +471,13 @@ $(document).ready(function () {
 
             //     // withdrawal - skip genesis docTX
             //     if (docs[i].ownerId.toString() == identityId && validDocs[i] == true && i != 0) {
-            //         localUserBalance += -(docs[i].data.withdrawAmount);
+            //         localUserBalance += -(docs[i].data.transferAmount);
             //         console.log("-- New Balance after Withdrawal " + localUserBalance + " at index " + i)
             //     }
 
             //     // deposit
-            //     if (docs[i].data.withdrawAddress == identityId && validDocs[i] == true) {
-            //         localUserBalance += docs[i].data.withdrawAmount;
+            //     if (docs[i].data.transferTo == identityId && validDocs[i] == true) {
+            //         localUserBalance += docs[i].data.transferAmount;
             //         console.log("-- New Balance after Deposit " + localUserBalance + " at index " + i)
             //     }
             // }
@@ -435,54 +486,54 @@ $(document).ready(function () {
 
             var listUserProc = [];
 
-            const myMethod = function (myIdentId, myUserBalance) {
+            const recursiveValidation = function (identId, userBalance) {
 
                 // process user balance and invalidate validDocs Array if found
                 for (var i = 0; i < docslen; i++) {
 
-                    if (docs[i].ownerId.toString() == myIdentId) { // if documents from user identityId
-                        if (myUserBalance == docs[i].data.balance) {
-                            console.log("Validate: TRUE (balance validated " + myUserBalance + " tokens) at index " + i)
+                    if (docs[i].ownerId.toString() == identId) { // if documents from user identityId
+                        if (userBalance == docs[i].data.balance) {
+                            console.log("Validate: TRUE (balance validated " + userBalance + " tokens) at index " + i)
                         } else {
                             validDocs[i] = false;
                             console.log("Validate: FALSE (invalid balance) at index " + i)
                         }
                     } else {
-                        // console.log("Skip document not owned by identity " + myIdentId)
+                        // console.log("Skip document not owned by identity " + identId)
                         someIdentId = docs[i].ownerId.toString();
                         console.log("Process document from identity " + someIdentId)
-                        
+
                         var skip = false;
                         for (x of listUserProc) {
                             if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
                         }
-                        
+
                         // only skip invalidating part, but keep processing balance processing below
                         if (!skip) {
-                            myMethod(someIdentId, 0);
+                            recursiveValidation(someIdentId, 0.0);
                             listUserProc.push(someIdentId);
                         }
                     }
 
                     // withdrawal - skip genesis docTX
-                    if (docs[i].ownerId.toString() == myIdentId && validDocs[i] == true && i != 0) {
-                        myUserBalance += -(docs[i].data.withdrawAmount);
-                        console.log("-- New Balance after Withdrawal " + myUserBalance + " at index " + i)
+                    if (docs[i].ownerId.toString() == identId && validDocs[i] == true && i != 0) {
+                        userBalance += -(docs[i].data.transferAmount);
+                        console.log("-- New Balance after Withdrawal " + userBalance + " at index " + i)
                     }
 
                     // deposit
-                    if (docs[i].data.withdrawAddress == myIdentId && validDocs[i] == true) {
-                        myUserBalance += docs[i].data.withdrawAmount;
-                        console.log("-- New Balance after Deposit " + myUserBalance + " at index " + i)
+                    if (docs[i].data.transferTo == identId && validDocs[i] == true) {
+                        userBalance += docs[i].data.transferAmount;
+                        console.log("-- New Balance after Deposit " + userBalance + " at index " + i)
                     }
                 }
-                return myUserBalance;
+                return userBalance;
             }
             // mark invalid docs for all users who deposited?? to this user before
             // myMethod(identityId, 0);
 
             // then calculate local user balance
-            localUserBalance = myMethod(identityId, localUserBalance);
+            localUserBalance = recursiveValidation(identityId, localUserBalance);
             console.log("Finished processing user balance: " + localUserBalance)
             $("#formBalance").val(localUserBalance);
 
@@ -492,28 +543,28 @@ $(document).ready(function () {
 
                 if (docs[i].ownerId.toString() == identityId && validDocs[i] == true) {
                     console.log("Found last withdrawal tx from this identityId at index " + i)
-                    localLastDocTX = i;
-                    break;
+                    indexesWithdrawals.push(i);
+                    // break;   // dont break, calc all withdrawals for transfer history
                 }
             }
 
             // search last deposits to this identityId TODO: only process since last withdraw or set to same as prev docTX document
-            for (var i = docslen - 1; i > localLastDocTX; i--) {
+            for (var i = docslen - 1; i > indexesWithdrawals[0]; i--) {
                 console.log(i)
-                console.log(docs[i].data.withdrawAddress)
-                if (docs[i].data.withdrawAddress == identityId && validDocs[i] == true) {
-                    localLastDeposits.push(i);
+                console.log(docs[i].data.transferTo)
+                if (docs[i].data.transferTo == identityId && validDocs[i] == true) {
+                    indexesDeposits.push(i);
                     console.log("Found last valid deposit since last withdraw for this identityId at index " + i)
                 }
                 // set lastDeposit value from prev docTX
-                if (i == localLastDocTX) {
-                    localLastDeposits.push(docs[i].data.lastValidDepositIndex);
-                    console.log("Adding last valid deposit value from last withdraw docTX " + docs[i].data.lastValidDepositIndex)
+                if (i == indexesWithdrawals) {
+                    indexesDeposits.push(docs[i].data.lastValIndTransferFrom);
+                    console.log("Adding last valid deposit value from last withdraw docTX " + docs[i].data.lastValIndTransferFrom)
                 };
             }
 
             // search through indexes for invalid docTX
-            var curLastDocTX = localLastDocTX;
+            var curLastDocTX = indexesWithdrawals;
             for (var i = docslen - 1; i > 0; i--) {
 
                 if (i == curLastDocTX) {
@@ -522,7 +573,7 @@ $(document).ready(function () {
                         console.dir(docs[i])
                         break;
                     }
-                    curLastDocTX = docs[i].data.lastValidWithdrawIndex;
+                    curLastDocTX = docs[i].data.lastValIndTransferTo;
                 }
 
                 if (i == 0) {
@@ -535,6 +586,61 @@ $(document).ready(function () {
         }
         await validateTokenBalance();
         $("#receiveBtn").prop('disabled', false);
+
+        // write tx history
+        var historyTx = [];
+        var historyType = [];
+        var historyValid = [];
+        var historyOutput = '';
+
+        // var queryTxHistory = {
+        //     "where": [
+        //         ["$ownerId", "==", identityId]
+        //         // ["transferFrom", "==", identityId]
+        //     ],
+        //     "startAt": 1
+        // }
+        // docsHistory = await client.platform.documents.get('tokenContract.token', queryTxHistory);
+        // docsHistoryLen = docsHistory.length;
+
+        for (var i = 0; i < docslen; i++) {
+            // check for transferFrom documents
+            if (docs[i].data.transferFrom == identityId) {
+                historyTx.push(docs[i])
+                historyType.push("Withdraw")
+                if (validDocs[i]) {
+                    historyValid.push(true);
+                } else {
+                    historyValid.push(false);
+                }
+            }
+            // check for transferTo documents
+            if (docs[i].data.transferTo == identityId) {
+                historyTx.push(docs[i])
+                historyType.push("Deposit")
+                if (validDocs[i]) {
+                    historyValid.push(true);
+                } else {
+                    historyValid.push(false);
+                }
+            }
+
+        }
+
+        // write history output
+        for (var i = 0; i < historyTx.length; i++) {
+            historyOutput.append(historyType[i] + " " + historyTx[i].transferFrom + " " + historyTx[i].transferTo + " " + historyTx[i].transferAmount + " " + historyValid[i].toString() + "\n")
+        }
+
+        // var lenHist = indexesDeposits.length + indexesWithdrawals.length;
+        // for (var i = 0; i < lenHist; i++) {
+        //     history.append("blub")
+        // }
+
+        $("#signinbutton").val(historyOutput)
+
+
+
         console.log("done")
 
     });

@@ -72,7 +72,8 @@
             </ul>
             <form class="form-inline my-2 my-lg-0">
 
-                <input id="signinbutton" class="btn btn-success my-2 my-sm-0" type="button" value="Sign in" onclick="location.href='./Sign-in.html';">
+                <input id="signinbutton" class="btn btn-success my-2 my-sm-0" type="button" value="Sign in"
+                    onclick="location.href='./Sign-in.html';">
             </form>
         </div>
     </nav>
@@ -92,7 +93,6 @@
                             <span class="input-group-text" id="inputGroup-sizing-lg">Token Contract &nbsp;</span>
                         </div>
                         <input class="form-control form-control-lg" type="text" id="formTokenContract" rows="1"><br>
-                        <!-- readonly=true -->
                     </div>
                     <br>
                     <br>
@@ -100,27 +100,37 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text" id="inputGroup-sizing-lg">Token Name &nbsp;</span>
                         </div>
-                        <input class="form-control form-control-lg" type="text" id="formTokenName" rows="1"><br>
+                        <input class="form-control form-control-lg mr-5" type="text" id="formTokenName" rows="1" placeholder="myToken"><br>
+
+                        <div class="input-group-prepend ml-5">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Token Symbol &nbsp;</span>
+                        </div>
+                        <input class="form-control form-control-lg" type="text" id="formTokenSymbol" rows="1" placeholder="TOK"><br>
                     </div>
 
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text" id="inputGroup-sizing-lg">Initial Token Amount &nbsp;</span>
                         </div>
-                        <input type="text" class="form-control form-control-lg" aria-label="Amount" value=""
-                            id="formTokenAmount">
-                        <div class="input-group-append">
+                        <input class="form-control form-control-lg mr-5" type="text" aria-label="Amount" value=""
+                            id="formTokenAmount" placeholder="1000">
+                        <!-- example add text at the right of input -->
+                        <!-- <div class="input-group-append">
                             <span class="input-group-text" id="inputGroup-sizing-lg"> </span>
+                        </div> -->
+                        <div class="input-group-prepend ml-5">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Number of Decimals &nbsp;</span>
                         </div>
+                        <input class="form-control form-control-lg" type="text" value="" id="formTokenDecimals" placeholder="8">
                     </div>
-					
+
                 </div>
-                
+
                 <button id="createBtn" type="button" class="btn btn-primary btn-lg">Create Token Contract</button>
                 <button id="initBtn" type="button" class="btn btn-primary btn-lg">Init Token Amount</button>
                 <br>
                 <br>
-                
+
                 <!-- <div class="input-group mb-3">
                     <div class="input-group-prepend">
                         <span class="input-group-text" id="inputGroup-sizing-lg">Token Contract &nbsp;</span>
@@ -131,30 +141,40 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text" id="inputGroup-sizing-lg">Balance &nbsp;</span>
                     </div>
-                    <input class="form-control form-control-lg" type="text" id="formBalance" rows="1" ><br>
+                    <input class="form-control form-control-lg" type="text" id="formBalance" rows="1"><br>
                     <!-- readonly=true -->
                 </div>
-                
+
                 <button id="receiveBtn" type="button" class="btn btn-primary btn-lg">Receive My Balance</button>
                 <br>
                 <br>
 
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <span class="input-group-text" id="inputGroup-sizing-lg">Withdraw Token Amount &nbsp;</span>
-                    </div>
-                    <input class="form-control form-control-lg" type="text" id="formSendAmount" rows="1"><br>
-                </div>
-                <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text" id="inputGroup-sizing-lg">Withdraw to User &nbsp;</span>
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Transfer to Identity &nbsp;</span>
                     </div>
                     <input class="form-control form-control-lg" type="text" id="formWithdrawUser" rows="1"><br>
                 </div>
-                
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Amount Token &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formSendAmount" rows="1"><br>
+                </div>
+
+
                 <button id="sendBtn" type="button" class="btn btn-primary btn-lg">Send Tokens</button>
                 <br>
-				
+                <br>
+
+                <div class="input-group-prepend">
+                    <span class="form-control-plaintext form-control-lg">Transfer History &nbsp;</span>
+                </div>
+                <textarea class="form-control form-control-lg" rows="6" placeholder="" required disabled
+                    style="background-color: white;"></textarea>
+                <!-- <input class="form-control form-control-lg" type="text" id="formTransferHistory" rows="10" ><br> -->
+                <br>
+
             </form>
         </div> <!-- /container -->
 
