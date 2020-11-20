@@ -6,27 +6,6 @@
 
 $(document).ready(function () {
 
-    // test mass documents in browser, result: 3sec for 100M values
-    // var massLen = 100000000;
-    // console.log("creating data set with " + massLen + " values")
-    // var start = new Date().getTime();   // Remember when we started
-    // var mass = [];
-    // var result = [];
-    // var rand = 0;
-    // for (var i = 0; i < massLen; i++) {
-    //     rand =  Math.floor(Math.random() * 10);
-    //     mass.push(rand);
-    //     // console.log(rand)
-    // }
-    // console.log("finish creating dataset, processing now")
-    // for (var i = 0; i < massLen; i++) {
-    //     if (mass[i] == 1) result.push(mass[i]);
-    // }
-    // var end = new Date().getTime(); // Remember when we finished
-    // console.log(end - start);   // Now calculate and output the difference
-    // console.log("finish processing, found " + result.length + " matching values")
-
-
     var username = sessionStorage.getItem('dash_username');
     var identityId = sessionStorage.getItem('dash_identityID');
     // var identityId = "AfZxsSWVKxDpHkXHQDqhEbyZYmfNcAgKq76TLCab4ZiD"
@@ -69,133 +48,12 @@ $(document).ready(function () {
     $("#exampleFormControlUser").val(dappAddress)
 
     $("#createBtn").click(async function () {
+
         console.log("click create data contract")
         $("#createBtn").prop('disabled', true);
 
-        var clientOpts = {};
-        clientOpts.network = 'evonet';
-        clientOpts.wallet = {};
-        clientOpts.wallet.mnemonic = dappMnemonic;
+        await initTokenContract('Token Dapp', username);
 
-        const client = new Dash.Client(clientOpts);
-        client.getApps().set("messageContract", { "contractId": messageContractId });
-
-        const dappContract = {
-            token: {
-                indices: [
-                    // {
-                    //   "properties": [{ "txnr": "asc" }], "unique": true
-                    // },
-                    // {
-                    //     "properties": [{ "sender": "asc" }], "unique": false
-                    // },
-                    {
-                        "properties": [{ "$ownerId": "asc" }], "unique": false
-                    },
-                    {
-                        "properties": [{ "$createdAt": "asc" }], "unique": false
-                    },
-                    {
-                        "properties": [{ "sender": "asc" }], "unique": false
-                    },
-                    {
-                        "properties": [{ "recipient": "asc" }], "unique": false
-                    },
-                ],
-                properties: {
-                    version: {
-                        type: "integer"
-                    },
-                    name: {
-                        type: "string"
-                    },
-                    symbol: {
-                        type: "string"
-                    },
-                    decimals: {
-                        type: "integer"
-                    },
-                    // totalSupply: {
-                    //     type: "integer"
-                    // },
-                    sender: {
-                        type: "string",
-                        maxLength: 44
-                    },
-                    recipient: {
-                        type: "string",
-                        maxLength: 44
-                    },
-                    amount: {
-                        type: "number"
-                    },
-                    owner: {
-                        type: "string"
-                    },
-                    // txnr: {
-                    //     type: "integer",
-                    //     "maxLength": 100000
-                    // },
-                    // depositAddress: {
-                    //     type: "string",
-                    //     "maxLength": 50
-                    // },
-                    balance: {
-                        type: "number"
-                    },
-                    lastValIndTransfer: {
-                        type: "integer",
-                        maxLength: 5
-                    },
-                    lastValIndTransferFrom: {
-                        type: "integer",
-                        maxLength: 5
-                    },
-                },
-                required: ["$createdAt", "$updatedAt"],
-                additionalProperties: false
-            }
-        };
-
-        const submitDataContractCreationDocument = async function () {
-
-            const strDappContract = JSON.stringify(dappContract);
-            try {
-                const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
-
-                //// dapp signing simple
-                docProperties = {
-                    header: 'Request ContractCreation ST',
-                    dappname: 'Simple Browser Dapp',
-                    reference: username,
-                    status: '0',
-                    timestamp: new Date().toUTCString(),
-                    STcontract: strDappContract
-                }
-
-                // Create the note document
-                const noteDocument = await client.platform.documents.create(
-                    'messageContract.message',
-                    identity,
-                    docProperties,
-                );
-
-                const documentBatch = {
-                    create: [noteDocument],
-                    replace: [],
-                    delete: [],
-                }
-
-                // Sign and submit the document
-                await client.platform.documents.broadcast(documentBatch, identity);
-            } catch (e) {
-                console.error('Something went wrong:', e);
-            } finally {
-                console.log("Send DS-Request: Create Contract: " + strDappContract)
-                // client.disconnect();
-            }
-        };
-        await submitDataContractCreationDocument();
         $("#createBtn").prop('disabled', false);
         console.log("done")
 
@@ -206,72 +64,33 @@ $(document).ready(function () {
         console.log("click init token amount")
         $("#initBtn").prop('disabled', true);
 
-        var clientOpts = {};
-        clientOpts.network = 'evonet';
-        clientOpts.wallet = {};
-        clientOpts.wallet.mnemonic = dappMnemonic;
-        var curApps = '{ "messageContract" : { "contractId" : "' + messageContractId + '" } }';
-        curApps = JSON.parse(curApps);
-        clientOpts.apps = curApps;
+        const tokenContractId = $("#formTokenContract").val();
+        const tokenVersion = 1;
+        const tokenName = $("#formTokenName").val();
+        const tokenSymbol = $("#formTokenSymbol").val();
+        const tokenDecimals = $("#formTokenDecimals").val();
+        const tokenSender = 'genesis document';    // could force check same identityId then dataContract creator and initiator...
+        const tokenRecipient = identityId,    // dapp login user identityId
+        const tokenAmount = Number($("#formTokenAmount").val());    // Init token amount value (not send amount)
+        const tokenOwner = identityId;
+        const tokenBalance = 0.0;
 
-        const client = new Dash.Client(clientOpts);
+        const initDocumentTxJson = {
+            version: tokenVersion,
+            name: tokenName,
+            symbol: tokenSymbol,
+            decimals: tokenDecimals,
+            sender: tokenSender,   
+            recipient: tokenRecipient,    // dapp login user identityId
+            amount: tokenAmount,
+            owner: tokenOwner,
+            balance: tokenBalance,
+            lastValIndTransfer: -1,
+            lastValIndTransferFrom: -1
+        }
 
-        const submitInitTokenDocument = async function () {
+        await initTokenDocument('Token Dapp', username, tokenContractId, initDocumentTxJson);
 
-            try {
-                const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
-
-                var jsonInitTX = {
-                    version: 1,
-                    name: $("#formTokenName").val(),
-                    symbol: $("#formTokenSymbol").val(),
-                    decimals: $("#formTokenDecimals").val(),
-                    sender: 'genesis document',   // could force check same identityId then dataContract creator and initiator...
-                    recipient: identityId,    // dapp login user identityId
-                    amount: Number($("#formTokenAmount").val()),
-                    owner: '',
-                    balance: 0.0,
-                    lastValIndTransfer: -1,
-                    lastValIndTransferFrom: -1
-                }
-
-                var strInitTx = JSON.stringify(jsonInitTX);
-
-                //// dapp signing simple
-                docProperties = {
-                    header: 'Request Document ST',
-                    dappname: 'Simple Browser Dapp',
-                    reference: username,
-                    status: '0',
-                    timestamp: new Date().toUTCString(),
-                    STcontract: $("#formTokenContract").val(),
-                    STdocument: 'token',
-                    STcontent: strInitTx
-                }
-
-                // Create the note document
-                const noteDocument = await client.platform.documents.create(
-                    'messageContract.message',
-                    identity,
-                    docProperties,
-                );
-
-                const documentBatch = {
-                    create: [noteDocument],
-                    replace: [],
-                    delete: [],
-                }
-
-                // Sign and submit the document
-                await client.platform.documents.broadcast(documentBatch, identity);
-            } catch (e) {
-                console.error('Something went wrong:', e);
-            } finally {
-                console.log("Send DS-Request: Init Token " + $("#formTokenName").val() + " with amount " + $("#formTokenAmount").val() + " to contract " + $("#formTokenContract").val())
-                // client.disconnect();
-            }
-        };
-        await submitInitTokenDocument();
         $("#initBtn").prop('disabled', false);
         console.log("done")
 
@@ -283,82 +102,37 @@ $(document).ready(function () {
         console.log("click send token")
         $("#sendBtn").prop('disabled', true);
 
-        const tokenContract = $("#formTokenContract").val();
+        const tokenContractId = $("#formTokenContract").val();
+        const tokenVersion = 1;
         const tokenName = $("#formTokenName").val();
-        const tokenTransferFrom = identityId;    // dappuser identityId TODO: fetch auto
-        const tokenTransfer = $("#formWithdrawUser").val();
-        const tokenTransferAmount = Number($("#formSendAmount").val());
+        const tokenSymbol = $("#formTokenSymbol").val();
+        const tokenDecimals = $("#formTokenDecimals").val();
+        const tokenSender = identityId;    // dappuser identityId TODO: fetch auto
+        const tokenRecipient = $("#formWithdrawUser").val();
+        const tokenAmount = Number($("#formSendAmount").val());
+        const tokenOwner = identityId;
         const tokenBalance = Number($("#formBalance").val());
 
-        console.log(tokenTransfer)
+        console.log(tokenRecipient)
 
-        var clientOpts = {};
-        clientOpts.network = 'evonet';
-        clientOpts.wallet = {};
-        clientOpts.wallet.mnemonic = dappMnemonic;
-
-        const client = new Dash.Client(clientOpts);
-        client.getApps().set("messageContract", { "contractId": messageContractId });
-        client.getApps().set("tokenContract", { "contractId": tokenContract });
-
-        const submitSendTokenDocument = async function () {
-
-            try {
-                const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
-
-                var jsonInitTX = {
-                    name: tokenName,
-                    sender: tokenTransferFrom,
-                    recipient: tokenTransfer,
-                    amount: tokenTransferAmount,
-                    balance: tokenBalance,
-                    lastValIndTransfer: indexesWithdrawals[0],
-                    lastValIndTransferFrom: indexesDeposits[0]
-                }
-
-                var strInitTx = JSON.stringify(jsonInitTX);
-
-                // dapp signing simple
-                docProperties = {
-                    header: 'Request Document ST',
-                    dappname: 'Simple Browser Dapp',
-                    reference: username,
-                    status: '0',
-                    timestamp: new Date().toUTCString(),
-                    STcontract: tokenContract,
-                    STdocument: 'token',
-                    // STcontent: '{ "tokenName" : "' + tokenName + '", "balance" : ' + tokenBalance + ', "amount" : ' + tokenAmount + ', "transfer" : "' + tokenWithdraw + '", "sender" : "' + tokenDeposit + '"}'
-                    STcontent: strInitTx
-                }
-
-                // Create the note document
-                const noteDocument = await client.platform.documents.create(
-                    'messageContract.message',
-                    identity,
-                    docProperties,
-                );
-
-                const documentBatch = {
-                    create: [noteDocument],
-                    replace: [],
-                    delete: [],
-                }
-
-                // Sign and submit the document
-                await client.platform.documents.broadcast(documentBatch, identity);
-            } catch (e) {
-                console.error('Something went wrong:', e);
-                return;
-            } finally {
-                console.log("Send DS-Request: Send Token Amount " + tokenTransferAmount + " from address " + tokenTransferFrom + " to address " + tokenTransfer)
-                // client.disconnect();
-            }
-
+        const contractTxJson = {
+            version: tokenVersion,
+            name: tokenName,
+            symbol: tokenSymbol,
+            decimals: tokenDecimals,
+            sender: tokenSender,   
+            recipient: tokenRecipient,    // dapp login user identityId
+            amount: tokenAmount,
+            owner: tokenOwner,
+            balance: tokenBalance,
+            lastValIndTransfer: indexesWithdrawals[0],
+            lastValIndTransferFrom: indexesDeposits[0]
         }
-        await submitSendTokenDocument();
+        
+        await sendTokenDocument('Token Dapp', username, tokenContractId, contractTxJson);
+
         // $("#sendBtn").prop('disabled', false);   // leave disabled until validate balance is called again
         console.log("done")
-
 
     });
 
@@ -370,15 +144,6 @@ $(document).ready(function () {
 
         localUserBalance = 0;
         const tokenContract = $("#formTokenContract").val();
-
-        var clientOpts = {};
-        clientOpts.network = 'evonet';
-        clientOpts.wallet = {};
-        clientOpts.wallet.mnemonic = dappMnemonic;
-
-        const client = new Dash.Client(clientOpts);
-        client.getApps().set("messageContract", { "contractId": messageContractId });
-        client.getApps().set("tokenContract", { "contractId": tokenContract });
 
 
         const validateTokenBalance = async function () {
