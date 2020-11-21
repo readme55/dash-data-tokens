@@ -1,5 +1,5 @@
 // v1 4th: 946mB3VPhRCBNhJbXGvuR9YqpHaXPbUr3GvpqsKTnSN7
-// v2 5th: 3jLjo5FGFQVauSVYTSFqMozrUxjBENzFXciFQSY4AQQG
+// v2 6th: J1WMq7jEcUNitVaD4SpGM4s2FcHqbMFQ27s2dpnYnwhS
 
 // cloud identID: AfZxsSWVKxDpHkXHQDqhEbyZYmfNcAgKq76TLCab4ZiD
 // dappuser identID: 72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp
@@ -18,30 +18,35 @@ $(document).ready(function () {
     // set buttons after load
     $("#receiveBtn").prop('disabled', true);
     $("#sendBtn").prop('disabled', true);
+    $("#initBtn").prop('disabled', true);
 
-    // $("#formTokenContract").val("946mB3VPhRCBNhJbXGvuR9YqpHaXPbUr3GvpqsKTnSN7"); // set static for testing
+    // set static for testing
+    $("#formTokenContract").val("J1WMq7jEcUNitVaD4SpGM4s2FcHqbMFQ27s2dpnYnwhS"); 
+    $("#receiveBtn").prop('disabled', false);
 
     $("#formTokenContract").change(function () {
         if ($("#formTokenContract").val() == "") {  // if contract input field is empty
             $("#createBtn").prop('disabled', false);
-            $("#initBtn").prop('disabled', false);
+            $("#initBtn").prop('disabled', true);
             $("#receiveBtn").prop('disabled', true);
             $("#sendBtn").prop('disabled', true);
-            $("#formTokenName").prop('readonly', false);
-            $("#formTokenSymbol").prop('readonly', false);
-            $("#formTokenAmount").prop('readonly', false);
-            $("#formTokenDecimals").prop('readonly', false);
+            // $("#formTokenName").prop('readonly', false);
+            // $("#formTokenSymbol").prop('readonly', false);
+            // $("#formTokenAmount").prop('readonly', false);
+            // $("#formTokenDecimals").prop('readonly', false);
         } else {    // if filled
             $("#createBtn").prop('disabled', true);
-            // $("#initBtn").prop('disabled', true);
+            $("#initBtn").prop('disabled', false);
             $("#receiveBtn").prop('disabled', false);
             $("#sendBtn").prop('disabled', true);
-            $("#formTokenName").prop('readonly', true);
-            $("#formTokenSymbol").prop('readonly', true);
+            // $("#formTokenName").prop('readonly', true);
+            // $("#formTokenSymbol").prop('readonly', true);
             // $("#formTokenAmount").prop('readonly', true);
-            $("#formTokenDecimals").prop('readonly', true);
+            // $("#formTokenDecimals").prop('readonly', true);
         }
     });
+
+    
 
     // $("#exampleFormControlUser").val(dappAddress)    // remove ? not used in html
 
@@ -49,6 +54,7 @@ $(document).ready(function () {
 
         console.log("click create data contract")
         $("#createBtn").prop('disabled', true);
+        
 
         await initTokenContract('Token Dapp', username);
 
@@ -66,12 +72,12 @@ $(document).ready(function () {
         const tokenVersion = 1;
         const tokenName = $("#formTokenName").val();
         const tokenSymbol = $("#formTokenSymbol").val();
-        const tokenDecimals = $("#formTokenDecimals").val();
+        const tokenDecimals = parseInt($("#formTokenDecimals").val());
         const tokenSender = 'genesis document';    // could force check same identityId then dataContract creator and initiator...
-        const tokenRecipient = identityId,    // dapp login user identityId
-        const tokenAmount = Number($("#formTokenAmount").val());    // Init token amount value (not send amount)
+        const tokenRecipient = identityId;   // dapp login user identityId
+        const tokenAmount = parseFloat($("#formTokenAmount").val());    // Init token amount value (not send amount)
         const tokenOwner = identityId;
-        const tokenBalance = 0.0;
+        const tokenBalance = parseFloat(0.0);
 
         const initDocumentTxJson = {
             version: tokenVersion,
@@ -89,7 +95,7 @@ $(document).ready(function () {
 
         await initTokenDocument('Token Dapp', username, tokenContractId, initDocumentTxJson);
 
-        $("#initBtn").prop('disabled', false);
+        // $("#initBtn").prop('disabled', false);
         console.log("done")
 
     });
@@ -104,12 +110,12 @@ $(document).ready(function () {
         const tokenVersion = 1;
         const tokenName = $("#formTokenName").val();
         const tokenSymbol = $("#formTokenSymbol").val();
-        const tokenDecimals = $("#formTokenDecimals").val();
+        const tokenDecimals = parseInt($("#formTokenDecimals").val());
         const tokenSender = identityId;    // dappuser identityId TODO: fetch auto
         const tokenRecipient = $("#formWithdrawUser").val();
-        const tokenAmount = Number($("#formSendAmount").val());
+        const tokenAmount = parseFloat($("#formSendAmount").val());
         const tokenOwner = identityId;
-        const tokenBalance = Number($("#formBalance").val());
+        const tokenBalance = parseFloat($("#formBalance").val());
 
         console.log(tokenRecipient)
 
@@ -145,15 +151,15 @@ $(document).ready(function () {
         
         $("#formBalance").val(getUserBalance());
         $("#formTokenName").val(getTokenName())
-        $("#formTokenSymbol").val(getTokenNameSymbol())
+        $("#formTokenSymbol").val(getTokenSymbol())
         $("#formTokenAmount").val(getTokenAmount())
-        $("#formTokenDecimals").val(getTokenDecimals())
+        $("#formTokenDecimals").val(getTokenDecimal())
 
         $("#receiveBtn").prop('disabled', false);
 
         $("#sendBtn").prop('disabled', false);  // activate sendBtn when validated successfully
 
-        var historyOutput = getTxHistory(identityId);
+        var historyOutput = await getTxHistory(identityId);
         $("#formHistoryOutput").val(historyOutput)
 
         console.log("done")

@@ -376,10 +376,10 @@ const getTxHistory = async function (identityId) {
     // docsHistory = await client.platform.documents.get('tokenContract.token', queryTxHistory);
     // docsHistoryLen = docsHistory.length;
 
-    for (var i = 0; i < docslen; i++) {
+    for (var i = 0; i < docs.length; i++) {
         // check for sender documents
         if (docs[i].data.sender == identityId) {
-            historyTx.push(docs[i])
+            historyTx.push(docs[i].data)
             historyType.push("Withdraw")
             if (validDocs[i]) {
                 historyValid.push(true);
@@ -389,7 +389,7 @@ const getTxHistory = async function (identityId) {
         }
         // check for recipient documents
         if (docs[i].data.recipient == identityId) {
-            historyTx.push(docs[i])
+            historyTx.push(docs[i].data)
             historyType.push("Deposit")
             if (validDocs[i]) {
                 historyValid.push(true);
@@ -401,8 +401,9 @@ const getTxHistory = async function (identityId) {
     }
 
     // write history output
+    historyOutput += "Type | Sender | Recipient | Amount | Valid TX \n"
     for (var i = 0; i < historyTx.length; i++) {
-        historyOutput.append(historyType[i] + " " + historyTx[i].sender + " " + historyTx[i].recipient + " " + historyTx[i].amount + " " + historyValid[i].toString() + "\n")
+        historyOutput += (historyType[i] + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].amount + " | " + historyValid[i].toString() + "\n")
     }
 
     // var lenHist = indexesDeposits.length + indexesWithdrawals.length;
