@@ -25,14 +25,47 @@ $(document).ready(function () {
         clientOpts.network = 'evonet';
         clientOpts.wallet = {};
         clientOpts.wallet.mnemonic = dappMnemonic;
-        // var clientApps = '{ "myContract" : { "contractId" : "' + messageContractId + '" } }';
-        // clientApps = JSON.parse(clientApps);
-        // clientOpts.apps = clientApps;
 
         client = new Dash.Client(clientOpts);
-        client.getApps().set("msgContract",  { "contractId" : messageContractId } )
+        client.getApps().set("msgContract", { "contractId": messageContractId })
 
-        console.log("submit Request Document ST")
+
+        // get identity ID for user
+        console.log("fetch identity ID from username")
+        async function getIdentityID() {
+
+            var recordLocator = "dpns.domain";
+            var queryString = '{ "where": [' +
+                '["normalizedParentDomainName", "==", "dash"],' +
+                '["normalizedLabel", "==", "' + inputUsername.toLowerCase() + '"]' +
+                '],' +
+                '"startAt": 1 }';
+
+            try {
+                var queryJson = JSON.parse(queryString);
+
+                const documents = await client.platform.documents.get(recordLocator, queryJson);
+                console.log(documents)
+                if (documents[0] == null || documents[0] == undefined) {
+                    console.log("Couldnt connect to network, aborting polling! Please try again in a few moments.");
+                } else {
+                    console.log("DocumentID for user " + inputUsername + ": " + documents[0].id)
+                    console.log("Identity for user " + inputUsername + ": " + documents[0].ownerId)
+                    docID = documents[0].id.toString()
+                    identityID = documents[0].ownerId.toString()
+                    console.log("saved Identity ID")
+                }
+            } catch (e) {
+                console.error('Something went wrong:', e);
+            } finally {
+                client.disconnect()
+            }
+        }
+        await getIdentityID();
+
+
+        // submit login request to wallet
+        console.log("submit Request Document for Login")
         const submitMessageDocument = async function () {
 
             try {
@@ -75,79 +108,38 @@ $(document).ready(function () {
         await submitMessageDocument();
 
 
-        // get identity ID for user
-        console.log("fetch identity ID from username")
-        async function getIdentityID() {
-            // clientApps = '{ "myContract" : { "contractId" : "' + dpnsContractID + '" } }';
-            // clientApps = JSON.parse(clientApps);
-            // clientOpts.apps = clientApps;
-
-            var recordLocator = "dpns.domain";
-            var queryString = '{ "where": [' +
-                '["normalizedParentDomainName", "==", "dash"],' +
-                '["normalizedLabel", "==", "' + inputUsername.toLowerCase() + '"]' +
-                '],' +
-                '"startAt": 1 }';
-
-            try {
-                client = new Dash.Client(clientOpts);
-
-                var queryJson = JSON.parse(queryString);
-                
-                const documents = await client.platform.documents.get(recordLocator, queryJson);
-                console.log(documents)
-                if (documents[0] == null || documents[0] == undefined) {
-                    console.log("Couldnt connect to network, aborting polling! Please try again in a few moments.");
-                } else {
-                    console.log("DocumentID for user " + inputUsername + ": " + documents[0].id)
-                    console.log("Identity for user " + inputUsername + ": " + documents[0].ownerId)
-                    docID = documents[0].id.toString()
-                    identityID = documents[0].ownerId.toString()
-                    console.log("saved Identity ID")
-                }
-            } catch (e) {
-                console.error('Something went wrong:', e);
-            } finally {
-                client.disconnect()
-            }
-        }
-        await getIdentityID();
-
-
         console.log("start polling for Response Login")
         async function polling() {
-            // clientApps = '{ "msgContract" : { "contractId" : "' + messageContractId + '" } }';
-            // clientApps = JSON.parse(clientApps);
-            // clientOpts.apps = clientApps;
-
             var recordLocator = "msgContract.message";
-            var queryString = '{ "startAt" : "' + 1 + '" }';
-            var queryJson = JSON.parse(queryString);
 
             try {
-                client = new Dash.Client(clientOpts);
-                client.getApps().set("msgContract",  { "contractId" : messageContractId } )
+                var isHead = false;
+                var nStart = 1;
 
-                const allDocuments = await client.platform.documents.get(recordLocator, queryJson);
-                var nStart = allDocuments.length;
+                while (true) {
 
-                var i = 1
-                while (i < 180) {
-                    console.log(nStart)
                     queryString = '{ "startAt" : "' + nStart + '" }';
                     queryJson = JSON.parse(queryString);
-                    var newDocuments = await client.platform.documents.get(recordLocator, queryJson);
-                    console.log(newDocuments)
-                    console.log(newDocuments.length)
+                    console.log("Poll document startAt: " + nStart)
+                    let documents = await client.platform.documents.get(recordLocator, queryJson);
 
-                    if (newDocuments.length >= 1 && newDocuments[0].ownerId.toString() == identityID && newDocuments[0].data.reference == inputUsername) {
+                    // find head document (can only poll 100 documents at once)
+                    if (isHead == false) {
+                        if (documents.length == 0) {
+                            console.log("Found head at doc nr " + nStart)
+                            isHead = true;
+                            await new Promise(r => setTimeout(r, 1500));  // sleep x ms
+                        }
+                        nStart = nStart + documents.length;
+                        continue;
+                    }
+                    
+                    if (documents.length >= 1 && documents[0].ownerId.toString() == identityID && documents[0].data.reference == inputUsername) {
                         console.log("Received valid Response Login document")
                         return true;
                     }
                     await new Promise(r => setTimeout(r, 1500));  // sleep x ms
-                    if (newDocuments.length >= 1)
-                        nStart++;
-                    i++;
+                    if (documents.length >= 1) nStart++;
                 }
                 return false;
 
