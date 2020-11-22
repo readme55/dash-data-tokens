@@ -11,8 +11,8 @@ $(document).ready(function () {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username)
     }
-    // let identityId = sessionStorage.getItem('dash_identityID');
-    let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
+    let identityId = sessionStorage.getItem('dash_identityID');
+    // let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
 
 
     // set buttons after load

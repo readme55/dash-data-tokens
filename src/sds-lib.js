@@ -86,7 +86,7 @@ const submitDocumentCreationMessage = async function (dappname, username, contra
         console.error('Something went wrong:', e);
     } finally {
         console.log("Successfully send Document Create Request for contract id " + contractId)
-        console.log(documentStr)
+        // console.log(documentStr) // variable not available here
     }
 
 }

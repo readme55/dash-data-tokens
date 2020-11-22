@@ -222,24 +222,39 @@ const processValidDocs = function (documents) {
         // process user balance and invalidate validDocs Array if found
         for (let i = 0; i < docslen; i++) {
 
-            if (documents[i].ownerId.toString() == identityId) { // if document is withdrawal from user identityId
+            // if document is withdrawal from user identityId
+            if (documents[i].ownerId.toString() == identityId) { 
                 if (userBalance == documents[i].data.balance) {
                     console.log("Validate for " + identityId + ": TRUE (balance validated " + userBalance + " tokens) at index " + i)
                 } else {
                     isValidDoc[i] = false;
                     console.log("Validate for " + identityId + ": FALSE (invalid balance) at index " + i)
                 }
-            } else {    // TODO: test with other ppl tx (IMPORTANT)
-                // console.log("Skip document not owned by identity " + identId)
-                someIdentId = documents[i].ownerId.toString();
+                // TODO check
+                let someIdentId = documents[i].ownerId.toString();
                 console.log("Process document from identity " + someIdentId)
 
-                let skip = false;
-                for (x of processedIdentList) {
-                    if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
+                // let skip = false;
+                // for (x of processedIdentList) {
+                //     if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
+                // }
+                // if (!skip) {
+                // console.log(processedIdentList.indexOf(someIdentId) + " indexOf")
+                if (processedIdentList.indexOf(someIdentId) == -1) {
+                    processedIdentList.push(someIdentId);
                 }
 
-                if (!skip) {
+            } else {    // TODO: test with other ppl tx (IMPORTANT)
+                // console.log("Skip document not owned by identity " + identId)
+                let someIdentId = documents[i].ownerId.toString();
+                console.log("Process document from identity " + someIdentId)
+
+                // let skip = false;
+                // for (x of processedIdentList) {
+                //     if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
+                // }
+                // if (!skip) {
+                if (processedIdentList.indexOf(someIdentId) == -1) {                                    
                     recursiveBalanceValidation(someIdentId, 0.0);
                     processedIdentList.push(someIdentId);
                 }
