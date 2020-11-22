@@ -1,11 +1,11 @@
 
 // client.getApps().set("tokenContract", { "contractId": tokenContract });  // may change dynamic, not needed as apps object since CW submits
 
-var docs = null;
-var localUserBalance = 0.0;
-var indexesWithdrawals = [];
-var indexesDeposits = [];
-var validDocs = [];
+let docs = null;
+let localUserBalance = 0.0;
+let indWithdrawals = [];
+let indDeposits = [];
+let isValidDoc = [];
 
 const dataContractJson = {
     token: {
@@ -110,10 +110,10 @@ const sendTokenDocument = async function (dappname, username, contractId, docume
 
 }
 
-var tokenName = '';
-var tokenSymbol = '';
-var tokenAmount = '';
-var tokenDecimal = '';
+let tokenName = '';
+let tokenSymbol = '';
+let tokenAmount = '';
+let tokenDecimal = '';
 
 const getTokenName = function () {
     return tokenName;
@@ -132,18 +132,18 @@ const validateTokenBalance = async function (tokenContract, identityId) {
 
     client.getApps().set("tokenContract", { "contractId": tokenContract });
 
-    indexesWithdrawals = [];
-    indexesDeposits = [];
+    indWithdrawals = [];
+    indDeposits = [];
     localUserBalance = 0.0;
     
     docs = null;
-    var docslen = null;
+    let docslen = null;
 
     try {
         const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity to read documents
 
         // get txnr height
-        var queryBasic = { startAt: 0 };
+        let queryBasic = { startAt: 0 };
         docs = await client.platform.documents.get('tokenContract.token', queryBasic);
         docslen = docs.length;
     } catch (e) {
@@ -176,20 +176,20 @@ const validateTokenBalance = async function (tokenContract, identityId) {
     }
 
     // const initAmount = docs[0].data.amount;
-    validDocs = [];
-    for (var i = 0; i < docslen; i++) {
-        validDocs.push(true);
+    isValidDoc = [];
+    for (let i = 0; i < docslen; i++) {
+        isValidDoc.push(true);
     }
 
     // validate all documents, skip genesis
-    for (var i = 1; i < docslen; i++) {
+    for (let i = 1; i < docslen; i++) {
 
         // validate amount >= zero
         if (docs[i].data.amount >= 0) {
             // console.log("Validate: amount >= 0 " + i)
         } else {
             console.log("Validate: FALSE (amount >= 0) at index " + i)
-            validDocs[i] = false;
+            isValidDoc[i] = false;
             continue;
         }
 
@@ -198,7 +198,7 @@ const validateTokenBalance = async function (tokenContract, identityId) {
             // console.log("Validate: balance >= amount " + i)
         } else {
             console.log("Validate: FALSE (balance >= amount) at index " + i)
-            validDocs[i] = false;
+            isValidDoc[i] = false;
             continue;
         }
 
@@ -207,7 +207,7 @@ const validateTokenBalance = async function (tokenContract, identityId) {
             console.log("Validate: sender == document ownerId " + i)
         } else {
             console.log("Validate: FALSE sender == document ownerId " + i)
-            validDocs[i] = false;
+            isValidDoc[i] = false;
             continue;
         }
 
@@ -221,16 +221,16 @@ const validateTokenBalance = async function (tokenContract, identityId) {
     //     console.log(ind)
     //     if (ind == 10) return true;
     //     if (ind == 20) return false;
-    //     var fdsa = myMethod(ind+1)
+    //     let fdsa = myMethod(ind+1)
     //     console.log("returned")
     //     return fdsa;
     // }
-    // var fdsa = myMethod(0);
+    // let fdsa = myMethod(0);
     // console.log(fdsa)
 
 
     // process user balance and invalidate validDocs Array if found
-    // for (var i = 0; i < docslen; i++) {
+    // for (let i = 0; i < docslen; i++) {
 
     //     if (docs[i].ownerId.toString() == identityId) { // if documents from user identityId
     //         if (localUserBalance == docs[i].data.balance) {
@@ -258,18 +258,18 @@ const validateTokenBalance = async function (tokenContract, identityId) {
     // console.log("Finished processing user balance: " + localUserBalance)
     // $("#formBalance").val(localUserBalance);
 
-    var processedIdentList = [];
+    let processedIdentList = [];
 
     const recursiveValidation = function (identId, userBalance) {
 
         // process user balance and invalidate validDocs Array if found
-        for (var i = 0; i < docslen; i++) {
+        for (let i = 0; i < docslen; i++) {
 
             if (docs[i].ownerId.toString() == identId) { // if documents from user identityId
                 if (userBalance == docs[i].data.balance) {
                     console.log("Validate: TRUE (balance validated " + userBalance + " tokens) at index " + i)
                 } else {
-                    validDocs[i] = false;
+                    isValidDoc[i] = false;
                     console.log("Validate: FALSE (invalid balance) at index " + i)
                 }
             } else {
@@ -277,7 +277,7 @@ const validateTokenBalance = async function (tokenContract, identityId) {
                 someIdentId = docs[i].ownerId.toString();
                 console.log("Process document from identity " + someIdentId)
 
-                var skip = false;
+                let skip = false;
                 for (x of processedIdentList) {
                     if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
                 }
@@ -290,13 +290,13 @@ const validateTokenBalance = async function (tokenContract, identityId) {
             }
 
             // withdrawal - skip genesis docTX
-            if (docs[i].ownerId.toString() == identId && validDocs[i] == true && i != 0) {
+            if (docs[i].ownerId.toString() == identId && isValidDoc[i] == true && i != 0) {
                 userBalance += -(docs[i].data.amount);
                 console.log("-- New Balance after Withdrawal " + userBalance + " at index " + i)
             }
 
             // deposit
-            if (docs[i].data.recipient == identId && validDocs[i] == true) {
+            if (docs[i].data.recipient == identId && isValidDoc[i] == true) {
                 userBalance += docs[i].data.amount;
                 console.log("-- New Balance after Deposit " + userBalance + " at index " + i)
             }
@@ -313,36 +313,36 @@ const validateTokenBalance = async function (tokenContract, identityId) {
 
 
     // search last withdraw from identityId
-    for (var i = docslen - 1; i > 0; i--) { // make > 0 so it doesnt go -1
+    for (let i = docslen - 1; i > 0; i--) { // make > 0 so it doesnt go -1
 
-        if (docs[i].ownerId.toString() == identityId && validDocs[i] == true) {
+        if (docs[i].ownerId.toString() == identityId && isValidDoc[i] == true) {
             console.log("Found last withdrawal tx from this identityId at index " + i)
-            indexesWithdrawals.push(i);
+            indWithdrawals.push(i);
             // break;   // dont break, calc all withdrawals for transfer history
         }
     }
 
     // search last deposits to this identityId TODO: only process since last withdraw or set to same as prev docTX document
-    for (var i = docslen - 1; i > indexesWithdrawals[0]; i--) {
+    for (let i = docslen - 1; i > indWithdrawals[0]; i--) {
         console.log(i)
         console.log(docs[i].data.recipient)
-        if (docs[i].data.recipient == identityId && validDocs[i] == true) {
-            indexesDeposits.push(i);
+        if (docs[i].data.recipient == identityId && isValidDoc[i] == true) {
+            indDeposits.push(i);
             console.log("Found last valid deposit since last withdraw for this identityId at index " + i)
         }
         // set lastDeposit value from prev docTX
-        if (i == indexesWithdrawals) {
-            indexesDeposits.push(docs[i].data.lastValIndTransferFrom);
+        if (i == indWithdrawals) {
+            indDeposits.push(docs[i].data.lastValIndTransferFrom);
             console.log("Adding last valid deposit value from last withdraw docTX " + docs[i].data.lastValIndTransferFrom)
         };
     }
 
     // search through indexes for invalid docTX
-    var curLastDocTX = indexesWithdrawals;
-    for (var i = docslen - 1; i > 0; i--) {
+    let curLastDocTX = indWithdrawals;
+    for (let i = docslen - 1; i > 0; i--) {
 
         if (i == curLastDocTX) {
-            if (!validDocs[i]) {
+            if (!isValidDoc[i]) {
                 console.log("invalid docTX found at index " + i)
                 console.dir(docs[i])
                 break;
@@ -361,12 +361,12 @@ const validateTokenBalance = async function (tokenContract, identityId) {
 const getTxHistory = async function (identityId) {
 
     // write tx history
-    var historyTx = [];
-    var historyType = [];
-    var historyValid = [];
-    var historyOutput = '';
+    let historyTx = [];
+    let historyType = [];
+    let historyValid = [];
+    let historyOutput = '';
 
-    // var queryTxHistory = {
+    // let queryTxHistory = {
     //     "where": [
     //         ["$ownerId", "==", identityId]
     //         // ["sender", "==", identityId]
@@ -376,12 +376,12 @@ const getTxHistory = async function (identityId) {
     // docsHistory = await client.platform.documents.get('tokenContract.token', queryTxHistory);
     // docsHistoryLen = docsHistory.length;
 
-    for (var i = 0; i < docs.length; i++) {
+    for (let i = 0; i < docs.length; i++) {
         // check for sender documents
         if (docs[i].data.sender == identityId) {
             historyTx.push(docs[i].data)
             historyType.push("Withdraw")
-            if (validDocs[i]) {
+            if (isValidDoc[i]) {
                 historyValid.push(true);
             } else {
                 historyValid.push(false);
@@ -391,7 +391,7 @@ const getTxHistory = async function (identityId) {
         if (docs[i].data.recipient == identityId) {
             historyTx.push(docs[i].data)
             historyType.push("Deposit")
-            if (validDocs[i]) {
+            if (isValidDoc[i]) {
                 historyValid.push(true);
             } else {
                 historyValid.push(false);
@@ -401,13 +401,13 @@ const getTxHistory = async function (identityId) {
     }
 
     // write history output
-    historyOutput += "Type | Sender | Recipient | Amount | Valid TX \n"
-    for (var i = 0; i < historyTx.length; i++) {
-        historyOutput += i + ": " + (historyType[i] + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].amount + " | " + historyValid[i].toString() + '\n')
+    historyOutput += "Nr:    Type     |                                       Sender                                        |                                     Recipient                                     | Amount | Valid TX \n"
+    for (let i = historyTx.length -1; i >= 0; i--) {
+        historyOutput += i + ":  " + (historyType[i] + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].amount + " | " + historyValid[i].toString() + '\n')
     }
 
-    // var lenHist = indexesDeposits.length + indexesWithdrawals.length;
-    // for (var i = 0; i < lenHist; i++) {
+    // let lenHist = indexesDeposits.length + indexesWithdrawals.length;
+    // for (let i = 0; i < lenHist; i++) {
     //     history.append("blub")
     // }
 
@@ -420,22 +420,22 @@ const getTxHistory = async function (identityId) {
 const testMass = async function () {
 
     // test mass documents in browser, result: 3sec for 100M values
-    var massLen = 100000000;
+    let massLen = 100000000;
     console.log("creating data set with " + massLen + " values")
-    var start = new Date().getTime();   // Remember when we started
-    var mass = [];
-    var result = [];
-    var rand = 0;
-    for (var i = 0; i < massLen; i++) {
+    let start = new Date().getTime();   // Remember when we started
+    let mass = [];
+    let result = [];
+    let rand = 0;
+    for (let i = 0; i < massLen; i++) {
         rand =  Math.floor(Math.random() * 10);
         mass.push(rand);
         // console.log(rand)
     }
     console.log("finish creating dataset, processing now")
-    for (var i = 0; i < massLen; i++) {
+    for (let i = 0; i < massLen; i++) {
         if (mass[i] == 1) result.push(mass[i]);
     }
-    var end = new Date().getTime(); // Remember when we finished
+    let end = new Date().getTime(); // Remember when we finished
     console.log(end - start);   // Now calculate and output the difference
     console.log("finish processing, found " + result.length + " matching values")
 

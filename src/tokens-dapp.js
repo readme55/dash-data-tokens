@@ -6,13 +6,13 @@
 
 $(document).ready(function () {
 
-    var username = sessionStorage.getItem('dash_username');
+    let username = sessionStorage.getItem('dash_username');
     if (username != null) {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username)
     }
-    var identityId = sessionStorage.getItem('dash_identityID');
-    // var identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
+    // let identityId = sessionStorage.getItem('dash_identityID');
+    let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
 
 
     // set buttons after load
@@ -21,7 +21,7 @@ $(document).ready(function () {
     $("#initBtn").prop('disabled', true);
 
     // set static for testing
-    $("#formTokenContract").val("J1WMq7jEcUNitVaD4SpGM4s2FcHqbMFQ27s2dpnYnwhS"); 
+    $("#formTokenContract").val("J1WMq7jEcUNitVaD4SpGM4s2FcHqbMFQ27s2dpnYnwhS");
     $("#receiveBtn").prop('disabled', false);
 
     $("#formTokenContract").change(function () {
@@ -129,8 +129,8 @@ $(document).ready(function () {
             amount: tokenAmount,
             owner: tokenOwner,
             balance: tokenBalance,
-            lastValIndTransfer: indexesWithdrawals[0],
-            lastValIndTransferFrom: indexesDeposits[0]
+            lastValIndTransfer: indWithdrawals[0],
+            lastValIndTransferFrom: indDeposits[0]
         }
         
         await sendTokenDocument('Token Dapp', username, tokenContractId, contractTxJson);
@@ -159,7 +159,7 @@ $(document).ready(function () {
 
         $("#sendBtn").prop('disabled', false);  // activate sendBtn when validated successfully
 
-        var historyOutput = await getTxHistory(identityId);
+        let historyOutput = await getTxHistory(identityId);
         $("#formHistoryOutput").val(historyOutput)
 
         console.log("done")

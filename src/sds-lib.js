@@ -1,4 +1,4 @@
-var clientOpts = {};
+let clientOpts = {};
 clientOpts.network = 'evonet';
 clientOpts.wallet = {};
 clientOpts.wallet.mnemonic = dappMnemonic;
@@ -52,7 +52,7 @@ const submitDocumentCreationMessage = async function (dappname, username, contra
     try {
         const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
 
-        var documentStr = JSON.stringify(documentJson);
+        let documentStr = JSON.stringify(documentJson);
 
         //// dapp signing simple
         docProperties = {
