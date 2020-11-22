@@ -12,7 +12,7 @@ $(document).ready(function () {
         $("#signinbutton").val(username)
     }
     var identityId = sessionStorage.getItem('dash_identityID');
-    // var identityId = "AfZxsSWVKxDpHkXHQDqhEbyZYmfNcAgKq76TLCab4ZiD"
+    // var identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
 
 
     // set buttons after load

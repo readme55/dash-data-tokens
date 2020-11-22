@@ -403,7 +403,7 @@ const getTxHistory = async function (identityId) {
     // write history output
     historyOutput += "Type | Sender | Recipient | Amount | Valid TX \n"
     for (var i = 0; i < historyTx.length; i++) {
-        historyOutput += (historyType[i] + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].amount + " | " + historyValid[i].toString() + "\n")
+        historyOutput += i + ": " + (historyType[i] + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].amount + " | " + historyValid[i].toString() + '\n')
     }
 
     // var lenHist = indexesDeposits.length + indexesWithdrawals.length;
