@@ -212,7 +212,6 @@ const processValidDocs = function (documents) {
             isValidDoc[i] = false;
             continue;
         }
-
     }
 
     let processedIdentList = [];
@@ -264,7 +263,6 @@ const processValidDocs = function (documents) {
     console.log("finish recursion")
 
     return isValidDoc;
-
 }
 
 const getIdentityBalance = function (identityId) {
@@ -287,7 +285,6 @@ const getIdentityBalance = function (identityId) {
 
     }
     return userBalance;
-
 }
 
 const processIndexesOptimized = function (identityId) {
@@ -325,7 +322,6 @@ const processIndexesOptimized = function (identityId) {
     // let curLastDocTX = indWithdrawals[0];
     // console.log(curLastDocTX)
     // for (let i = docslen - 1; i >= 0; i--) {
-
     //     if (i == curLastDocTX) {
     //         if (!isValidDoc[i]) {
     //             console.log("invalid docTX found at index " + i)
@@ -334,7 +330,6 @@ const processIndexesOptimized = function (identityId) {
     //         }
     //         curLastDocTX = documents[i].data.lastValIndTransfer;
     //     }
-
     //     if (i == 0) {
     //         console.log("finished searching for invalid docTX - no results found!")
     //     }
@@ -382,238 +377,6 @@ const validateTokenBalance = async function (tokenContract, identityId) {
     indWithdrawals = [];
     indDeposits = [];
     processAllIndexes(identityId);
-
-}
-
-
-const validateTokenBalanceOld = async function (tokenContract, identityId) {
-
-    client.getApps().set("tokenContract", { "contractId": tokenContract });
-
-    indWithdrawals = [];
-    indDeposits = [];
-    localUserBalance = 0.0;
-
-    documents = null;
-    let docslen = null;
-
-    try {
-        const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity to read documents
-
-        // get txnr height
-        let queryBasic = { startAt: 0 };
-        documents = await client.platform.documents.get('tokenContract.token', queryBasic);
-        docslen = documents.length;
-    } catch (e) {
-        console.error('Something went wrong:', e);
-        if (e.code == 3) console.log("Invalid contract ID");
-        return;
-    }
-
-    if (docslen == 0) {
-        console.log("ERROR: Empty Token Contract, needs to get initialized")
-        return; // will jump to "finally section"
-    }
-    if (documents[0].data.name == undefined) {
-        console.log("ERROR: Token Name is undefined in Token Contract genesis document")
-    } else {
-        tokenName = documents[0].data.name;
-        tokenSymbol = documents[0].data.symbol
-        tokenAmount = documents[0].data.amount
-        tokenDecimal = documents[0].data.decimals
-
-    }
-
-    console.log("contract document length: " + docslen)
-
-    // TODO: Validate genesis document
-    if (documents[0].data.sender == "genesis document") {
-        console.log("Validate: genesis document found");
-    } else {
-        console.log("Validate: FALSE (genesis document found)");
-    }
-
-    // const initAmount = docs[0].data.amount;
-    // init boolean array with true
-    isValidDoc = [];
-    for (let i = 0; i < docslen; i++) {
-        isValidDoc.push(true);
-    }
-
-    // validate all documents, skip genesis
-    for (let i = 1; i < docslen; i++) {
-
-        // validate amount >= zero
-        if (documents[i].data.amount >= 0) {
-            // console.log("Validate: amount >= 0 " + i)
-        } else {
-            console.log("Validate: FALSE (amount >= 0) at index " + i)
-            isValidDoc[i] = false;
-            continue;
-        }
-
-        // validate balance >= amount
-        if (documents[i].data.balance >= documents[i].data.amount) {
-            // console.log("Validate: balance >= amount " + i)
-        } else {
-            console.log("Validate: FALSE (balance >= amount) at index " + i)
-            isValidDoc[i] = false;
-            continue;
-        }
-
-        // validate document owner id == sender
-        if (documents[i].ownerId.toString() == documents[i].data.sender) {
-            console.log("Validate: sender == document ownerId " + i)
-        } else {
-            console.log("Validate: FALSE sender == document ownerId " + i)
-            isValidDoc[i] = false;
-            continue;
-        }
-
-    }
-
-
-    // TODO: make this method iterative with input identityID 
-
-    // iterative test
-    // const myMethod = function (ind) {
-    //     console.log(ind)
-    //     if (ind == 10) return true;
-    //     if (ind == 20) return false;
-    //     let fdsa = myMethod(ind+1)
-    //     console.log("returned")
-    //     return fdsa;
-    // }
-    // let fdsa = myMethod(0);
-    // console.log(fdsa)
-
-
-    // process user balance and invalidate validDocs Array if found
-    // for (let i = 0; i < docslen; i++) {
-
-    //     if (docs[i].ownerId.toString() == identityId) { // if documents from user identityId
-    //         if (localUserBalance == docs[i].data.balance) {
-    //             console.log("Validate: TRUE (balance validated " + localUserBalance + " tokens) at index " + i)
-    //         } else {
-    //             validDocs[i] = false;
-    //             console.log("Validate: FALSE (invalid balance) at index " + i)
-    //         }
-    //     } else {
-    //         console.log("Skip document not owned by identity " + identityId)
-    //     }
-
-    //     // withdrawal - skip genesis docTX
-    //     if (docs[i].ownerId.toString() == identityId && validDocs[i] == true && i != 0) {
-    //         localUserBalance += -(docs[i].data.amount);
-    //         console.log("-- New Balance after Withdrawal " + localUserBalance + " at index " + i)
-    //     }
-
-    //     // deposit
-    //     if (docs[i].data.recipient == identityId && validDocs[i] == true) {
-    //         localUserBalance += docs[i].data.amount;
-    //         console.log("-- New Balance after Deposit " + localUserBalance + " at index " + i)
-    //     }
-    // }
-    // console.log("Finished processing user balance: " + localUserBalance)
-    // $("#formBalance").val(localUserBalance);
-
-    let processedIdentList = [];
-
-    const recursiveValidation = function (identId, userBalance) {
-
-        // process user balance and invalidate validDocs Array if found
-        for (let i = 0; i < docslen; i++) {
-
-            if (documents[i].ownerId.toString() == identId) { // if documents from user identityId
-                if (userBalance == documents[i].data.balance) {
-                    console.log("Validate: TRUE (balance validated " + userBalance + " tokens) at index " + i)
-                } else {
-                    isValidDoc[i] = false;
-                    console.log("Validate: FALSE (invalid balance) at index " + i)
-                }
-            } else {
-                // console.log("Skip document not owned by identity " + identId)
-                someIdentId = documents[i].ownerId.toString();
-                console.log("Process document from identity " + someIdentId)
-
-                let skip = false;
-                for (x of processedIdentList) {
-                    if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
-                }
-
-                // only skip invalidating part, but keep processing balance processing below
-                if (!skip) {
-                    recursiveValidation(someIdentId, 0.0);
-                    processedIdentList.push(someIdentId);
-                }
-            }
-
-            // withdrawal - skip genesis docTX
-            if (documents[i].ownerId.toString() == identId && isValidDoc[i] == true && i != 0) {
-                userBalance += -(documents[i].data.amount);
-                console.log("-- New Balance after Withdrawal " + userBalance + " at index " + i)
-            }
-
-            // deposit
-            if (documents[i].data.recipient == identId && isValidDoc[i] == true) {
-                userBalance += documents[i].data.amount;
-                console.log("-- New Balance after Deposit " + userBalance + " at index " + i)
-            }
-        }
-        return userBalance;
-    }
-    // mark invalid docs for all users who deposited?? to this user before
-    // myMethod(identityId, 0);
-
-    // then calculate local user balance
-    localUserBalance = recursiveValidation(identityId, localUserBalance);
-    console.log("Finished processing user balance: " + localUserBalance)
-    // $("#formBalance").val(localUserBalance);
-
-
-    // search last withdraw from identityId
-    for (let i = docslen - 1; i > 0; i--) { // make > 0 so it doesnt go -1
-
-        if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true) {
-            console.log("Found last withdrawal tx from this identityId at index " + i)
-            indWithdrawals.push(i);
-            // break;   // dont break, calc all withdrawals for transfer history
-        }
-    }
-
-    // search last deposits to this identityId TODO: only process since last withdraw or set to same as prev docTX document
-    // for (let i = docslen - 1; i >= 0; i--) { // process all deposits
-    for (let i = docslen - 1; i > indWithdrawals[0]; i--) { // process only deposits since last withdrawal
-        console.log(i)
-        console.log(documents[i].data.recipient)
-        if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
-            indDeposits.push(i);
-            console.log("Found last valid deposit since last withdraw for this identityId at index " + i)
-        }
-        // no deposits set lastDeposit value from prev docTX
-        if (i == indWithdrawals[0]) {
-            indDeposits.push(documents[i].data.lastValIndTransferFrom);
-            console.log("Adding last valid deposit value from last withdraw docTX " + documents[i].data.lastValIndTransferFrom)
-        };
-    }
-
-    // search through indexes for invalid docTX
-    let curLastDocTX = indWithdrawals[0];
-    for (let i = docslen - 1; i >= 0; i--) {
-
-        if (i == curLastDocTX) {
-            if (!isValidDoc[i]) {
-                console.log("invalid docTX found at index " + i)
-                console.dir(documents[i])
-                break;
-            }
-            curLastDocTX = documents[i].data.lastValIndTransfer;
-        }
-
-        if (i == 0) {
-            console.log("finished searching for invalid docTX - no results found!")
-        }
-    }
 
 }
 
