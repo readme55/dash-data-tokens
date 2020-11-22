@@ -220,43 +220,29 @@ const processValidDocs = function (documents) {
     const recursiveBalanceValidation = function (identityId, userBalance) {
 
         // process user balance and invalidate validDocs Array if found
+        console.log("Start processing document for identity " + identityId)
         for (let i = 0; i < docslen; i++) {
+            
+            let procIdentityId = documents[i].ownerId.toString();   // processing document owner id
 
-            // if document is withdrawal from user identityId
-            if (documents[i].ownerId.toString() == identityId) { 
+            // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment to see where optimisation potential
+            // if document is owned by own identity
+            if (procIdentityId == identityId) {    // if withdrawal or approval (TODO)
                 if (userBalance == documents[i].data.balance) {
-                    console.log("Validate for " + identityId + ": TRUE (balance validated " + userBalance + " tokens) at index " + i)
+                    // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
                 } else {
                     isValidDoc[i] = false;
-                    console.log("Validate for " + identityId + ": FALSE (invalid balance) at index " + i)
-                }
-                // TODO check
-                let someIdentId = documents[i].ownerId.toString();
-                console.log("Process document from identity " + someIdentId)
-
-                // let skip = false;
-                // for (x of processedIdentList) {
-                //     if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
-                // }
-                // if (!skip) {
-                // console.log(processedIdentList.indexOf(someIdentId) + " indexOf")
-                if (processedIdentList.indexOf(someIdentId) == -1) {
-                    processedIdentList.push(someIdentId);
+                    // console.log("index " + i + " Validate: FALSE (invalid balance)")
                 }
 
-            } else {    // TODO: test with other ppl tx (IMPORTANT)
-                // console.log("Skip document not owned by identity " + identId)
-                let someIdentId = documents[i].ownerId.toString();
-                console.log("Process document from identity " + someIdentId)
-
-                // let skip = false;
-                // for (x of processedIdentList) {
-                //     if (someIdentId == x) skip = true; // skip if identId already processed before (bc documents already got invalidated)
-                // }
-                // if (!skip) {
-                if (processedIdentList.indexOf(someIdentId) == -1) {                                    
-                    recursiveBalanceValidation(someIdentId, 0.0);
-                    processedIdentList.push(someIdentId);
+                if (processedIdentList.indexOf(identityId) == -1) {
+                    processedIdentList.push(identityId);
+                }   
+            // else document is from other identity
+            } else {
+                if (processedIdentList.indexOf(procIdentityId) == -1) {                                    
+                    recursiveBalanceValidation(procIdentityId, 0.0);    // start processing for this identity before continuing (bc need to validate this one first)
+                    processedIdentList.push(procIdentityId);
                 }
             }
 
@@ -264,13 +250,13 @@ const processValidDocs = function (documents) {
             // Sum up Balance after Withdrawal  - skip genesis docTX
             if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
                 userBalance += -(documents[i].data.amount);
-                console.log("-- Withdrawal: Balance for " + identityId + " is " + userBalance + " at index " + i)
+                console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
             }
 
             // Sum up Balance after Deposit
             if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
                 userBalance += documents[i].data.amount;
-                console.log("-- Deposit: Balance for " + identityId + " is " + userBalance + " at index " + i)
+                console.log("index " + i + ": Deposit - Balance for " + identityId + " is " + userBalance)
             }
         }
     }
@@ -290,13 +276,13 @@ const getIdentityBalance = function (identityId) {
         // withdrawal - skip genesis docTX
         if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
             userBalance += -(documents[i].data.amount);
-            console.log("-- New Balance after Withdrawal " + userBalance + " at index " + i)
+            console.log("index " + i + ": Balance after Withdrawal " + userBalance)
         }
 
         // deposit
         if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
             userBalance += documents[i].data.amount;
-            console.log("-- New Balance after Deposit " + userBalance + " at index " + i)
+            console.log("index " + i + ": Balance after Deposit " + userBalance)
         }
 
     }
@@ -312,7 +298,7 @@ const processIndexesOptimized = function (identityId) {
     for (let i = docslen - 1; i >= 0; i--) {
 
         if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true) {
-            console.log("Found last withdrawal tx from this identityId at index " + i)
+            console.log("index " + i + ": Found last withdrawal from this identityId")
             indWithdrawals.push(i);
             // break;   // dont break, calc all withdrawals for transfer history
         }
@@ -324,7 +310,7 @@ const processIndexesOptimized = function (identityId) {
         console.log(documents[i].data.recipient)
         if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
             indDeposits.push(i);
-            console.log("Found last valid deposit since last withdraw for this identityId at index " + i)
+            console.log("index " + i + ": Found last valid deposit since last withdraw for this identityId")
         }
         // last withdrawal reached, set lastDeposit value from prev docTX (optimization)
         if (i == indWithdrawals[0]) {
@@ -364,7 +350,7 @@ const processAllIndexes = function (identityId) {
     for (let i = docslen - 1; i >= 1; i--) {    // skip genesis document
 
         if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true) {
-            console.log("Found last valid withdrawal tx from this identityId at index " + i)
+            console.log("index " + i + ": Found last valid withdrawal from this identityId")
             indWithdrawals.push(i);
         }
     }
@@ -374,7 +360,7 @@ const processAllIndexes = function (identityId) {
 
         if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
             indDeposits.push(i);
-            console.log("Found last valid deposit for this identityId at index " + i)
+            console.log("index " + i + ": Found last valid deposit for this identityId");
         }
     }
 }
