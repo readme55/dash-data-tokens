@@ -1,7 +1,7 @@
 
 // client.getApps().set("tokenContract", { "contractId": tokenContract });  // may change dynamic, not needed as apps object since CW submits
 
-let documents = null;
+let documents = [];
 let localUserBalance = 0.0;
 let indWithdrawals = [];
 let indDeposits = [];
@@ -133,13 +133,22 @@ const getTokenDecimal = function () {
 const getDocumentChain = async function (tokenContract) {
 
     client.getApps().set("tokenContract", { "contractId": tokenContract });
-    documents = null;
+    documents = [];
 
     try {
         const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity to read documents
 
-        let queryBasic = { startAt: 0 };
-        documents = await client.platform.documents.get('tokenContract.token', queryBasic);
+        // read in 100 document steps (limit) until all collected
+        let nStart = 0;
+        let len = 100;
+        while (len == 100) {
+            let queryBasic = { startAt: nStart };
+            let tmpDocuments = await client.platform.documents.get('tokenContract.token', queryBasic);
+            len = tmpDocuments.length;
+            nStart += len;
+            Array.prototype.push.apply(documents, tmpDocuments)
+        }
+
     } catch (e) {
         console.error('Something went wrong:', e);
         if (e.code == 3) console.log("Invalid contract ID");
@@ -221,7 +230,7 @@ const processValidDocs = function (documents) {
         // process user balance and invalidate validDocs Array if found
         console.log("Start processing document for identity " + identityId)
         for (let i = 0; i < docslen; i++) {
-            
+
             let procIdentityId = documents[i].ownerId.toString();   // processing document owner id
 
             // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment to see where optimisation potential
@@ -236,10 +245,10 @@ const processValidDocs = function (documents) {
 
                 if (processedIdentList.indexOf(identityId) == -1) {
                     processedIdentList.push(identityId);
-                }   
-            // else document is from other identity
+                }
+                // else document is from other identity
             } else {
-                if (processedIdentList.indexOf(procIdentityId) == -1) {                                    
+                if (processedIdentList.indexOf(procIdentityId) == -1) {
                     recursiveBalanceValidation(procIdentityId, 0.0);    // start processing for this identity before continuing (bc need to validate this one first)
                     processedIdentList.push(procIdentityId);
                 }
@@ -368,7 +377,7 @@ const validateTokenBalance = async function (tokenContract, identityId) {
 
     console.log("++++ Start (in-)validating all Documents:")
     isValidDoc = processValidDocs(documents);
-    
+
 
     console.log("++++ Start processing Identity Balance for " + identityId)
     localUserBalance = getIdentityBalance(identityId);
@@ -387,6 +396,7 @@ const getTxHistory = async function (identityId) {
     let historyTx = [];
     let historyType = [];
     let historyValid = [];
+    let historyBalance = [];    // TODO add
     let historyOutput = '';
 
     // let queryTxHistory = {
@@ -436,7 +446,6 @@ const getTxHistory = async function (identityId) {
 
     return historyOutput;
 }
-
 
 
 

@@ -68,7 +68,7 @@ $(document).ready(function () {
         console.log("click init token amount")
         $("#initBtn").prop('disabled', true);
 
-        const tokenContractId = $("#formTokenContract").val();
+        const tokenContractId = $("#formTokenContract").val().trim();
         const tokenVersion = 1;
         const tokenName = $("#formTokenName").val();
         const tokenSymbol = $("#formTokenSymbol").val();
@@ -106,13 +106,13 @@ $(document).ready(function () {
         console.log("click send token")
         $("#sendBtn").prop('disabled', true);
 
-        const tokenContractId = $("#formTokenContract").val();
+        const tokenContractId = $("#formTokenContract").val().trim();
         const tokenVersion = 1;
         const tokenName = $("#formTokenName").val();
         const tokenSymbol = $("#formTokenSymbol").val();
         const tokenDecimals = parseInt($("#formTokenDecimals").val());
         const tokenSender = identityId;    // dappuser identityId TODO: fetch auto
-        const tokenRecipient = $("#formWithdrawUser").val();
+        const tokenRecipient = $("#formWithdrawUser").val().trim();
         const tokenAmount = parseFloat($("#formSendAmount").val());
         const tokenOwner = identityId;
         const tokenBalance = parseFloat($("#formBalance").val());
@@ -146,7 +146,7 @@ $(document).ready(function () {
         console.log("click validate balance")
         $("#receiveBtn").prop('disabled', true);
 
-        const tokenContract = $("#formTokenContract").val();
+        const tokenContract = $("#formTokenContract").val().trim();
         await validateTokenBalance(tokenContract, identityId);
         
         $("#formBalance").val(getUserBalance());
@@ -162,6 +162,24 @@ $(document).ready(function () {
         let historyOutput = await getTxHistory(identityId);
         $("#formHistoryOutput").val(historyOutput)
 
+        console.log("done")
+
+    });
+
+
+    $("#searchBtn").click(async function () {
+
+        console.log("Identity Explorer")
+        $("#searchBtn").prop('disabled', true);
+        
+        const tokenContract = $("#formTokenContract").val().trim();
+        const exploreIdentity = $("#formIdentity").val().trim();
+        await validateTokenBalance(tokenContract, exploreIdentity);
+
+        let historyOutput = await getTxHistory(identityId);
+        $("#formHistoryOutput").val(historyOutput)
+
+        $("#searchBtn").prop('disabled', false);
         console.log("done")
 
     });
