@@ -176,7 +176,7 @@ $(document).ready(function () {
         const exploreIdentity = $("#formIdentity").val().trim();
         await validateTokenBalance(tokenContract, exploreIdentity);
 
-        let historyOutput = await getTxHistory(identityId);
+        let historyOutput = await getTxHistory(exploreIdentity);
         $("#formHistoryOutput").val(historyOutput)
 
         $("#searchBtn").prop('disabled', false);

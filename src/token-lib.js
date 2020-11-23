@@ -3,6 +3,7 @@
 
 let documents = [];
 let localUserBalance = 0.0;
+let localBalanceHistory = [];
 let indWithdrawals = [];
 let indDeposits = [];
 let isValidDoc = [];
@@ -277,18 +278,21 @@ const processValidDocs = function (documents) {
 const getIdentityBalance = function (identityId) {
 
     let userBalance = 0.0;
+    localBalanceHistory = [];
     let docslen = documents.length;
     for (let i = 0; i < docslen; i++) {
 
         // withdrawal - skip genesis docTX
         if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
             userBalance += -(documents[i].data.amount);
+            localBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Withdrawal " + userBalance)
         }
 
         // deposit
         if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
             userBalance += documents[i].data.amount;
+            localBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Deposit " + userBalance)
         }
 
@@ -378,7 +382,6 @@ const validateTokenBalance = async function (tokenContract, identityId) {
     console.log("++++ Start (in-)validating all Documents:")
     isValidDoc = processValidDocs(documents);
 
-
     console.log("++++ Start processing Identity Balance for " + identityId)
     localUserBalance = getIdentityBalance(identityId);
 
@@ -414,6 +417,7 @@ const getTxHistory = async function (identityId) {
         if (documents[i].data.sender == identityId) {
             historyTx.push(documents[i].data)
             historyType.push("Withdraw")
+            historyBalance.push(localBalanceHistory[i])
             if (isValidDoc[i]) {
                 historyValid.push(true);
             } else {
@@ -424,6 +428,7 @@ const getTxHistory = async function (identityId) {
         if (documents[i].data.recipient == identityId) {
             historyTx.push(documents[i].data)
             historyType.push("Deposit")
+            historyBalance.push(localBalanceHistory[i])
             if (isValidDoc[i]) {
                 historyValid.push(true);
             } else {
@@ -434,9 +439,9 @@ const getTxHistory = async function (identityId) {
     }
 
     // write history output
-    historyOutput += "Nr:    Type     |                                       Sender                                        |                                     Recipient                                     | Amount | Valid TX \n"
+    historyOutput += "Nr:    Type     | Amount | Balance | Valid |                                   Sender                                    |                                     Recipient                                     \n"
     for (let i = historyTx.length - 1; i >= 0; i--) {
-        historyOutput += i + ":  " + (historyType[i] + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].amount + " | " + historyValid[i].toString() + '\n')
+        historyOutput += i + ":  " + (historyType[i] + " |   " + historyTx[i].amount + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + '\n')
     }
 
     // let lenHist = indexesDeposits.length + indexesWithdrawals.length;
