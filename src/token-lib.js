@@ -85,9 +85,6 @@ const dataContractJson = {
     }
 };
 
-const getUserBalance = function () {
-    return localUserBalance;
-}
 
 const initTokenContract = async function (dappname, username) {
 
@@ -129,6 +126,11 @@ const getTokenAmount = function () {
 const getTokenDecimal = function () {
     return tokenDecimal;
 }
+
+const getUserBalance = function () {
+    return localUserBalance;
+}
+
 
 
 const getDocumentChain = async function (tokenContract) {
@@ -375,6 +377,15 @@ const processAllIndexes = function (identityId) {
 
 
 const validateTokenBalance = async function (tokenContract, identityId) {
+
+    if(tokenContract == "") {
+        console.log("ERROR: Insert contract id")
+        return;
+    }
+    if(identityId == "") {
+        console.log("ERROR: Insert Identity id")
+        return;
+    }
 
     console.log("++++ Fetching all Documents:")
     documents = await getDocumentChain(tokenContract);

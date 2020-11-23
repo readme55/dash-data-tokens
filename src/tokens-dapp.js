@@ -148,12 +148,13 @@ $(document).ready(function () {
 
         const tokenContract = $("#formTokenContract").val().trim();
         await validateTokenBalance(tokenContract, identityId);
-        
-        $("#formBalance").val(getUserBalance());
+
         $("#formTokenName").val(getTokenName())
         $("#formTokenSymbol").val(getTokenSymbol())
         $("#formTokenAmount").val(getTokenAmount())
         $("#formTokenDecimals").val(getTokenDecimal())
+        $("#formBalance").val(getUserBalance());
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + getUserBalance() + " " + getTokenSymbol() + ")";
 
         $("#receiveBtn").prop('disabled', false);
 
@@ -171,10 +172,17 @@ $(document).ready(function () {
 
         console.log("Identity Explorer")
         $("#searchBtn").prop('disabled', true);
-        
+
         const tokenContract = $("#formTokenContract").val().trim();
         const exploreIdentity = $("#formIdentity").val().trim();
+
         await validateTokenBalance(tokenContract, exploreIdentity);
+
+        $("#formTokenName").val(getTokenName())
+        $("#formTokenSymbol").val(getTokenSymbol())
+        $("#formTokenAmount").val(getTokenAmount())
+        $("#formTokenDecimals").val(getTokenDecimal())
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + getUserBalance() + " " + getTokenSymbol() + ")";
 
         let historyOutput = await getTxHistory(exploreIdentity);
         $("#formHistoryOutput").val(historyOutput)
