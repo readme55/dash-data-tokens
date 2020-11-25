@@ -1,5 +1,5 @@
 
-// client.getApps().set("tokenContract", { "contractId": tokenContract });  // may change dynamic, not needed as apps object since CW submits
+// client.getApps().set("tokenContractLoc", { "contractId": tokenContractId });  // may change dynamic, not needed as apps object since CW submits
 
 let documents = [];
 let localUserBalance = 0.0;
@@ -71,6 +71,9 @@ const dataContractJson = {
             balance: {
                 type: "number"
             },
+            data: {
+                type: "string",
+            },
             lastValIndTransfer: {
                 type: "integer",
                 maxLength: 5
@@ -86,20 +89,28 @@ const dataContractJson = {
 };
 
 
-const initTokenContract = async function (dappname, username) {
+const createTokenContract = async function (dappname, username) {
 
     await submitDataContractCreationMessage(dappname, username, dataContractJson);
 
 }
 
-const initTokenDocument = async function (dappname, username, contractId, documentJson) {
+const mintTokenDocument = async function (dappname, username, contractId, documentJson) {
 
-    if (documentJson.sender == 'genesis document' && documentJson.balance == 0.0) {
+    if (documentJson.sender == '1'.repeat(42) && documentJson.recipient != '1'.repeat(42)) {
         await submitDocumentCreationMessage(dappname, username, contractId, documentJson);
     } else {
-        console.log("ERROR: not a valid init Token document")
+        console.log("ERROR: not a valid mint Token document")
     }
+}
 
+const burnTokenDocument = async function (dappname, username, contractId, documentJson) {
+
+    if (documentJson.sender != '1'.repeat(42) && documentJson.recipient == '1'.repeat(42)) {
+        await submitDocumentCreationMessage(dappname, username, contractId, documentJson);
+    } else {
+        console.log("ERROR: not a valid burn Token document")
+    }
 }
 
 const sendTokenDocument = async function (dappname, username, contractId, documentJson) {
@@ -133,9 +144,9 @@ const getUserBalance = function () {
 
 
 
-const getDocumentChain = async function (tokenContract) {
+const getDocumentChain = async function (tokenContractId) {
 
-    client.getApps().set("tokenContract", { "contractId": tokenContract });
+    client.getApps().set("tokenContractLoc", { "contractId": tokenContractId });
     documents = [];
 
     try {
@@ -146,7 +157,7 @@ const getDocumentChain = async function (tokenContract) {
         let len = 100;
         while (len == 100) {
             let queryBasic = { startAt: nStart };
-            let tmpDocuments = await client.platform.documents.get('tokenContract.token', queryBasic);
+            let tmpDocuments = await client.platform.documents.get('tokenContractLoc.token', queryBasic);
             len = tmpDocuments.length;
             nStart += len;
             Array.prototype.push.apply(documents, tmpDocuments)
@@ -160,27 +171,30 @@ const getDocumentChain = async function (tokenContract) {
 
     // Check token contract initialized and save token attributes
     if (documents.length == 0) {
-        console.log("ERROR: Empty Token Contract, needs to get initialized")
+        console.log("ERROR: Token Contract not Initialized! Contract Owner needs to mint initial supply")
         return; // will jump to "finally section"
     }
-    if (documents[0].data.name == undefined) {
-        console.log("ERROR: Token Name is undefined in Token Contract genesis document")
+
+    // validate contract owner minted initial supply
+    const contractJson = await client.platform.contracts.get(tokenContractId);
+    if (documents[0].ownerId.toString() != contractJson.ownerId.toString()) {
+        console.log("ERROR: Token Contract Broken! Someone different then the contract owner minted initial supply")
+    } else if (documents[0].data.sender != '1'.repeat(42)) {
+        console.log("ERROR: Token Contract Broken! Token Sender is not zero address 0x0 in Token Contract genesis document")
+    } else if (documents[0].data.name == undefined) {
+        console.log("ERROR: Token Contract Broken! Token Name is undefined in Token Contract genesis document")
+    } else if (documents[0].data.symbol == undefined) {
+        console.log("ERROR: Token Contract Broken! Token Symbol is undefined in Token Contract genesis document")
+    } else if (documents[0].data.decimal == undefined) {
+        console.log("ERROR: Token Contract Broken! Token Decimal is undefined in Token Contract genesis document")
     } else {
         tokenName = documents[0].data.name;
         tokenSymbol = documents[0].data.symbol
         tokenAmount = documents[0].data.amount
         tokenDecimal = documents[0].data.decimals
-
     }
 
     console.log("contract document length: " + documents.length)
-
-    // Validate genesis document
-    if (documents[0].data.sender == "genesis document") {
-        console.log("Validate: genesis document found");
-    } else {
-        console.log("Validate: FALSE (genesis document found)");
-    }
 
     return documents;
 }
@@ -376,9 +390,9 @@ const processAllIndexes = function (identityId) {
 }
 
 
-const validateTokenBalance = async function (tokenContract, identityId) {
+const validateTokenBalance = async function (tokenContractId, identityId) {
 
-    if(tokenContract == "") {
+    if(tokenContractId == "") {
         console.log("ERROR: Insert contract id")
         return;
     }
@@ -388,7 +402,7 @@ const validateTokenBalance = async function (tokenContract, identityId) {
     }
 
     console.log("++++ Fetching all Documents:")
-    documents = await getDocumentChain(tokenContract);
+    documents = await getDocumentChain(tokenContractId);
 
     console.log("++++ Start (in-)validating all Documents:")
     isValidDoc = processValidDocs(documents);
@@ -420,7 +434,7 @@ const getTxHistory = async function (identityId) {
     //     ],
     //     "startAt": 1
     // }
-    // docsHistory = await client.platform.documents.get('tokenContract.token', queryTxHistory);
+    // docsHistory = await client.platform.documents.get('tokenContractLoc.token', queryTxHistory);
     // docsHistoryLen = docsHistory.length;
 
     for (let i = 0; i < documents.length; i++) {

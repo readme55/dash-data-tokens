@@ -11,8 +11,8 @@ $(document).ready(function () {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username)
     }
-    let identityId = sessionStorage.getItem('dash_identityID');
-    // let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
+    // let identityId = sessionStorage.getItem('dash_identityID');
+    let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
 
 
     // set buttons after load
@@ -56,7 +56,7 @@ $(document).ready(function () {
         $("#createBtn").prop('disabled', true);
         
 
-        await initTokenContract('Token Dapp', username);
+        await createTokenContract('Token Dapp', username);
 
         $("#createBtn").prop('disabled', false);
         console.log("done")
@@ -73,11 +73,11 @@ $(document).ready(function () {
         const tokenName = $("#formTokenName").val();
         const tokenSymbol = $("#formTokenSymbol").val();
         const tokenDecimals = parseInt($("#formTokenDecimals").val());
-        const tokenSender = 'genesis document';    // could force check same identityId then dataContract creator and initiator...
+        const tokenSender = '1'.repeat(42);    // could force check same identityId then dataContract creator and initiator...
         const tokenRecipient = identityId;   // dapp login user identityId
         const tokenAmount = parseFloat($("#formTokenAmount").val());    // Init token amount value (not send amount)
-        const tokenOwner = identityId;
-        const tokenBalance = parseFloat(0.0);
+        const tokenOwner = identityId;  // TODO remove bc redundant with ownerId ? perhaps need for approve and transferFrom !
+        const tokenBalance = parseFloat(0.0);   // TODO: check whats standard here
 
         const initDocumentTxJson = {
             version: tokenVersion,
@@ -93,7 +93,7 @@ $(document).ready(function () {
             lastValIndTransferFrom: -1
         }
 
-        await initTokenDocument('Token Dapp', username, tokenContractId, initDocumentTxJson);
+        await mintTokenDocument('Token Dapp', username, tokenContractId, initDocumentTxJson);
 
         // $("#initBtn").prop('disabled', false);
         console.log("done")
@@ -146,8 +146,8 @@ $(document).ready(function () {
         console.log("click validate balance")
         $("#receiveBtn").prop('disabled', true);
 
-        const tokenContract = $("#formTokenContract").val().trim();
-        await validateTokenBalance(tokenContract, identityId);
+        const tokenContractId = $("#formTokenContract").val().trim();
+        await validateTokenBalance(tokenContractId, identityId);
 
         $("#formTokenName").val(getTokenName())
         $("#formTokenSymbol").val(getTokenSymbol())
@@ -173,10 +173,10 @@ $(document).ready(function () {
         console.log("Identity Explorer")
         $("#searchBtn").prop('disabled', true);
 
-        const tokenContract = $("#formTokenContract").val().trim();
+        const tokenContractId = $("#formTokenContract").val().trim();
         const exploreIdentity = $("#formIdentity").val().trim();
 
-        await validateTokenBalance(tokenContract, exploreIdentity);
+        await validateTokenBalance(tokenContractId, exploreIdentity);
 
         $("#formTokenName").val(getTokenName())
         $("#formTokenSymbol").val(getTokenSymbol())
