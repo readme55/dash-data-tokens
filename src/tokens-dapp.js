@@ -151,16 +151,16 @@ $(document).ready(function () {
         const tokenContractId = $("#formTokenContract").val().trim();
         await processDocumentChain(tokenContractId, identityId);
 
-        $("#formTokenName").val(getTokenName())
-        $("#formTokenSymbol").val(getTokenSymbol())
-        $("#formTokenAmount").val(getTokenAmount())
-        $("#formTokenDecimals").val(getTokenDecimal())
+        $("#formTokenName").val(name())
+        $("#formTokenSymbol").val(symbol())
+        $("#formTokenAmount").val(initialSupply())
+        $("#formTokenDecimals").val(decimals())
         $("#formBalance").val(getUserBalance());
 
-        document.getElementById("formAppendTokenSymbol").innerHTML = getTokenSymbol();
-        document.getElementById("formAppendTokenSymbol2").innerHTML = getTokenSymbol();
+        document.getElementById("formAppendTokenSymbol").innerHTML = symbol();
+        document.getElementById("formAppendTokenSymbol2").innerHTML = symbol();
 
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + getUserBalance() + " " + getTokenSymbol() + ")";
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + getUserBalance() + " " + symbol() + ")";
 
         $("#receiveBtn").prop('disabled', false);
 
@@ -184,11 +184,11 @@ $(document).ready(function () {
 
         await processDocumentChain(tokenContractId, exploreIdentity);
 
-        $("#formTokenName").val(getTokenName())
-        $("#formTokenSymbol").val(getTokenSymbol())
-        $("#formTokenAmount").val(getTokenAmount())
-        $("#formTokenDecimals").val(getTokenDecimal())
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + getUserBalance() + " " + getTokenSymbol() + ")";
+        $("#formTokenName").val(name())
+        $("#formTokenSymbol").val(symbol())
+        $("#formTokenAmount").val(initialSupply())
+        $("#formTokenDecimals").val(decimals())
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + getUserBalance() + " " + symbol() + ")";
 
         let historyOutput = await getTxHistory(exploreIdentity);
         $("#formHistoryOutput").val(historyOutput)

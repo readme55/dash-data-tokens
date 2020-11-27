@@ -136,26 +136,37 @@ const sendTokenDocument = async function (dappname, username, contractId, docume
 // token attributes
 let tokenName = '';
 let tokenSymbol = '';
-let tokenAmount = '';
+let tokenInitSupply = '';
 let tokenDecimal = '';
 
-const getTokenName = function () {
+const name = function () {
     return tokenName;
 }
-const getTokenSymbol = function () {
+const symbol = function () {
     return tokenSymbol;
 }
-const getTokenAmount = function () {
-    return tokenAmount;
-}
-const getTokenDecimal = function () {
+const decimals = function () {
     return tokenDecimal;
 }
+const totalSupply = function() {
+    return tokenInitSupply;    // ignoring zero address and without further minting
+}
 
+const initialSupply = function () {
+    return tokenInitSupply;
+}
 const getUserBalance = function () {
     return localUserBalance;
 }
 
+// const transfer = function (recipient, amount) {
+// }
+// const allowance = function (owner, spender) {
+// }
+// const approve = function (spender, amount) {
+// }
+// const transferFrom = function (sender, recipient, amount) {
+// }
 
 
 const getDocumentChain = async function (tokenContractId) {
@@ -204,7 +215,7 @@ const getDocumentChain = async function (tokenContractId) {
     } else {
         tokenName = documents[0].data.name;
         tokenSymbol = documents[0].data.symbol
-        tokenAmount = documents[0].data.amount
+        tokenInitSupply = documents[0].data.amount
         tokenDecimal = documents[0].data.decimals
     }
 
@@ -305,7 +316,7 @@ const getValidDocumentChain = function (documents) {
     return isValidDoc;
 }
 
-const getBalance = function (identityId) {
+const balanceOf = function (identityId) {
 
     let userBalance = 0.0;
     localBalanceHistory = [];
@@ -424,7 +435,7 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     console.log("++++ Valid document amount is " + isValidDoc.filter(x => x==true).length );    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)
-    localUserBalance = getBalance(identityId);
+    localUserBalance = balanceOf(identityId);
     console.log("++++ Account Balance is " + localUserBalance)
 
     console.log("++++ Processing withdraw/deposit indexes")
