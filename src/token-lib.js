@@ -113,6 +113,7 @@ const burnTokenDocument = async function (dappname, username, contractId, docume
     }
 }
 
+// TODO: refac to transfer(address, amount, data)
 const sendTokenDocument = async function (dappname, username, contractId, documentJson) {
 
     await submitDocumentCreationMessage(dappname, username, contractId, documentJson);
@@ -180,7 +181,7 @@ const getDocumentChain = async function (tokenContractId) {
     if (documents[0].ownerId.toString() != contractJson.ownerId.toString()) {
         console.log("ERROR: Token Contract Broken! Someone different then the contract owner minted initial supply")
     } else if (documents[0].data.sender != '1'.repeat(42)) {
-        console.log("ERROR: Token Contract Broken! Token Sender is not zero address 0x0 in Token Contract genesis document")
+        console.log("ERROR: Token Contract Broken! Token Sender is not zero address in Token Contract genesis document")
     } else if (documents[0].data.name == undefined) {
         console.log("ERROR: Token Contract Broken! Token Name is undefined in Token Contract genesis document")
     } else if (documents[0].data.symbol == undefined) {
@@ -199,7 +200,7 @@ const getDocumentChain = async function (tokenContractId) {
     return documents;
 }
 
-const processValidDocs = function (documents) {
+const getValidDocumentChain = function (documents) {
 
     let docslen = documents.length;
 
@@ -272,7 +273,7 @@ const processValidDocs = function (documents) {
             }
 
             // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
-            // Sum up Balance after Withdrawal  - skip genesis docTX
+            // Sum up Balance after Withdrawal  - skip genesis document
             if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
                 userBalance += -(documents[i].data.amount);
                 console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
@@ -291,14 +292,14 @@ const processValidDocs = function (documents) {
     return isValidDoc;
 }
 
-const getIdentityBalance = function (identityId) {
+const getBalance = function (identityId) {
 
     let userBalance = 0.0;
     localBalanceHistory = [];
     let docslen = documents.length;
     for (let i = 0; i < docslen; i++) {
 
-        // withdrawal - skip genesis docTX
+        // withdrawal - skip genesis document
         if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
             userBalance += -(documents[i].data.amount);
             localBalanceHistory[i] = userBalance;
@@ -338,10 +339,10 @@ const processIndexesOptimized = function (identityId) {
             indDeposits.push(i);
             console.log("index " + i + ": Found last valid deposit since last withdraw for this identityId")
         }
-        // last withdrawal reached, set lastDeposit value from prev docTX (optimization)
+        // last withdrawal reached, set lastDeposit value from prev document (optimization)
         if (i == indWithdrawals[0]) {
             indDeposits.push(documents[i].data.lastValIndTransferFrom);
-            console.log("Adding last valid deposit value from last withdraw docTX " + documents[i].data.lastValIndTransferFrom)
+            console.log("Adding last valid deposit value from last withdraw document " + documents[i].data.lastValIndTransferFrom)
         };
     }
 
@@ -365,7 +366,7 @@ const processIndexesOptimized = function (identityId) {
     // }
 }
 
-
+// not used for validation, could be removed (keep until sure)
 const processAllIndexes = function (identityId) {
 
     let docslen = documents.length;
@@ -390,7 +391,7 @@ const processAllIndexes = function (identityId) {
 }
 
 
-const validateTokenBalance = async function (tokenContractId, identityId) {
+const processDocumentChain = async function (tokenContractId, identityId) {
 
     if(tokenContractId == "") {
         console.log("ERROR: Insert contract id")
@@ -403,14 +404,17 @@ const validateTokenBalance = async function (tokenContractId, identityId) {
 
     console.log("++++ Fetching all Documents:")
     documents = await getDocumentChain(tokenContractId);
+    console.log("++++ Fetched " + documents.length + " documents")
 
-    console.log("++++ Start (in-)validating all Documents:")
-    isValidDoc = processValidDocs(documents);
+    console.log("++++ Processing valid Documents:")
+    isValidDoc = getValidDocumentChain(documents);
+    console.log("++++ Valid document amount is " + isValidDoc.filter(x => x==true).length );    // TODO: comment for production
 
-    console.log("++++ Start processing Identity Balance for " + identityId)
-    localUserBalance = getIdentityBalance(identityId);
+    console.log("++++ Processing Account Balance for " + identityId)
+    localUserBalance = getBalance(identityId);
+    console.log("++++ Account Balance is " + localUserBalance)
 
-    console.log("++++ Start processing withdraw/deposit indexes")
+    console.log("++++ Processing withdraw/deposit indexes")
     indWithdrawals = [];
     indDeposits = [];
     processAllIndexes(identityId);
@@ -424,9 +428,10 @@ const getTxHistory = async function (identityId) {
     let historyTx = [];
     let historyType = [];
     let historyValid = [];
-    let historyBalance = [];    // TODO add
+    let historyBalance = [];
     let historyOutput = '';
 
+    // TODO: optimise with query instead of iterating through all documents
     // let queryTxHistory = {
     //     "where": [
     //         ["$ownerId", "==", identityId]
@@ -464,15 +469,10 @@ const getTxHistory = async function (identityId) {
     }
 
     // write history output
-    historyOutput += "Nr:    Type     | Amount | Balance | Valid |                                   Sender                                    |                                     Recipient                                     \n"
+    historyOutput += "Nr:    Type     | Amount | Balance | Valid |                                   Sender                                    |                                     Recipient                                   |   Message         \n"
     for (let i = historyTx.length - 1; i >= 0; i--) {
-        historyOutput += i + ":  " + (historyType[i] + " |   " + historyTx[i].amount + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + '\n')
+        historyOutput += i + ":  " + (historyType[i] + " |   " + historyTx[i].amount + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
     }
-
-    // let lenHist = indexesDeposits.length + indexesWithdrawals.length;
-    // for (let i = 0; i < lenHist; i++) {
-    //     history.append("blub")
-    // }
 
     return historyOutput;
 }

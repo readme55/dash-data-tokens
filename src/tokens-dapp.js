@@ -116,6 +116,7 @@ $(document).ready(function () {
         const tokenAmount = parseFloat($("#formSendAmount").val());
         const tokenOwner = identityId;
         const tokenBalance = parseFloat($("#formBalance").val());
+        const tokenData = $("#formSendData").val();
 
         console.log(tokenRecipient)
 
@@ -127,6 +128,7 @@ $(document).ready(function () {
             sender: tokenSender,   
             recipient: tokenRecipient,    // dapp login user identityId
             amount: tokenAmount,
+            data: tokenData,
             owner: tokenOwner,
             balance: tokenBalance,
             lastValIndTransfer: indWithdrawals[0],
@@ -147,7 +149,7 @@ $(document).ready(function () {
         $("#receiveBtn").prop('disabled', true);
 
         const tokenContractId = $("#formTokenContract").val().trim();
-        await validateTokenBalance(tokenContractId, identityId);
+        await processDocumentChain(tokenContractId, identityId);
 
         $("#formTokenName").val(getTokenName())
         $("#formTokenSymbol").val(getTokenSymbol())
@@ -176,7 +178,7 @@ $(document).ready(function () {
         const tokenContractId = $("#formTokenContract").val().trim();
         const exploreIdentity = $("#formIdentity").val().trim();
 
-        await validateTokenBalance(tokenContractId, exploreIdentity);
+        await processDocumentChain(tokenContractId, exploreIdentity);
 
         $("#formTokenName").val(getTokenName())
         $("#formTokenSymbol").val(getTokenSymbol())
