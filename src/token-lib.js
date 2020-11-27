@@ -8,6 +8,9 @@ let indWithdrawals = [];
 let indDeposits = [];
 let isValidDoc = [];
 
+
+// NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for transferFrom ERC-20 Method.
+// Balance and ValidIndexes not needed for processing (could be removed), but kept for now (may be used for runtime optimisation)
 const dataContractJson = {
     token: {
         indices: [
@@ -35,10 +38,16 @@ const dataContractJson = {
                 type: "integer"
             },
             name: {
-                type: "string"
+                type: "string",
+                minLength: 1,
+                pattern: "^[a-zA-Z0-9 ]+$"
             },
             symbol: {
-                type: "string"
+                type: "string",
+                minLength: 1,
+                maxLength: 5,
+                pattern: "^[a-zA-Z0-9]+$"
+
             },
             decimals: {
                 type: "integer"
@@ -48,25 +57,29 @@ const dataContractJson = {
             // },
             sender: {
                 type: "string",
-                maxLength: 44
+                minLength: 42,
+                maxLength: 44,
+                pattern: "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$"
             },
             recipient: {
                 type: "string",
-                maxLength: 44
+                minLength: 42,
+                maxLength: 44,
+                pattern: "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$"
+
             },
             amount: {
                 type: "number"
             },
             owner: {
-                type: "string"
+                type: "string",
+                minLength: 42,
+                maxLength: 44,
+                pattern: "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$"
             },
             // txnr: {
             //     type: "integer",
             //     "maxLength": 100000
-            // },
-            // depositAddress: {
-            //     type: "string",
-            //     "maxLength": 50
             // },
             balance: {
                 type: "number"
@@ -83,7 +96,7 @@ const dataContractJson = {
                 maxLength: 5
             },
         },
-        required: ["$createdAt", "$updatedAt"],
+        required: ["$createdAt", "$updatedAt", "name", "symbol", "decimals", "sender", "recipient", "amount"],
         additionalProperties: false
     }
 };
