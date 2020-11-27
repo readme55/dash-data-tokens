@@ -156,6 +156,10 @@ $(document).ready(function () {
         $("#formTokenAmount").val(getTokenAmount())
         $("#formTokenDecimals").val(getTokenDecimal())
         $("#formBalance").val(getUserBalance());
+
+        document.getElementById("formAppendTokenSymbol").innerHTML = getTokenSymbol();
+        document.getElementById("formAppendTokenSymbol2").innerHTML = getTokenSymbol();
+
         document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + getUserBalance() + " " + getTokenSymbol() + ")";
 
         $("#receiveBtn").prop('disabled', false);

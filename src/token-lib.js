@@ -186,7 +186,7 @@ const getDocumentChain = async function (tokenContractId) {
         console.log("ERROR: Token Contract Broken! Token Name is undefined in Token Contract genesis document")
     } else if (documents[0].data.symbol == undefined) {
         console.log("ERROR: Token Contract Broken! Token Symbol is undefined in Token Contract genesis document")
-    } else if (documents[0].data.decimal == undefined) {
+    } else if (documents[0].data.decimals == undefined) {
         console.log("ERROR: Token Contract Broken! Token Decimal is undefined in Token Contract genesis document")
     } else {
         tokenName = documents[0].data.name;

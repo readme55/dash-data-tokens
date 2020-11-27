@@ -110,7 +110,7 @@
 
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="inputGroup-sizing-lg">Initial Token Amount &nbsp;</span>
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Initial Token Supply &nbsp;</span>
                         </div>
                         <input class="form-control form-control-lg mr-5" type="text" aria-label="Amount" value=""
                             id="formTokenAmount" placeholder="1000">
@@ -127,7 +127,7 @@
                 </div>
 
                 <button id="createBtn" type="button" class="btn btn-primary btn-lg">Create Token Contract</button>
-                <button id="initBtn" type="button" class="btn btn-primary btn-lg">Mint initial Token Amount</button>
+                <button id="initBtn" type="button" class="btn btn-primary btn-lg">Mint Initial Token Supply</button>
                 <br>
                 <br>
 
@@ -143,9 +143,12 @@
                     </div>
                     <input class="form-control form-control-lg" type="text" id="formBalance" rows="1"><br>
                     <!-- readonly=true -->
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="formAppendTokenSymbol"> </span>
+                    </div>
                 </div>
 
-                <button id="receiveBtn" type="button" class="btn btn-primary btn-lg">Receive My Balance</button>
+                <button id="receiveBtn" type="button" class="btn btn-primary btn-lg">Get Account Balance</button>
                 <br>
                 <br>
 
@@ -161,7 +164,7 @@
                     </div>
                     <input class="form-control form-control-lg" type="text" id="formSendAmount" rows="1"><br>
                     <div class="input-group-append">
-                            <span class="input-group-text" id="inputGroup-sizing-lg"> Token </span>
+                            <span class="input-group-text" id="formAppendTokenSymbol2"> </span>
                     </div>
                 </div>
                 
