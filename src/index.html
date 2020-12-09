@@ -7,24 +7,23 @@
   <meta name="author" content="">
   <meta name="generator" content="">
   <!-- Primary Meta Tags -->
-<title>Dash Platform Sample Dapps</title>
-<meta name="title" content="Dash Platform Sample Dapps">
-<meta name="description" content="Collection of simple Dash Platform Dapps to showcase how they can be implemented using Simple-Dapp-Signing Algorithm.">
+<meta name="title" content="Dash Platform Data Tokens">
+<meta name="description" content="">
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="http://readme.dashdevs.org/sample-dapps/">
-<meta property="og:title" content="Dash Platform Sample Dapps">
-<meta property="og:description" content="Collection of simple Dash Platform Dapps to showcase how they can be implemented using Simple-Dapp-Signing Algorithm.">
-<meta property="og:image" content="https://raw.githubusercontent.com/readme55/sample-dapps/main/meta.png">
+<meta property="og:url" content="http://readme.dashdevs.org/dash-tokens/">
+<meta property="og:title" content="Dash Platform Data Tokens">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://raw.githubusercontent.com/readme55/dash-tokens/main/meta.png">
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="http://readme.dashdevs.org/sample-dapps/">
-<meta property="twitter:title" content="Dash Platform Sample Dapps">
-<meta property="twitter:description" content="Collection of simple Dash Platform Dapps to showcase how they can be implemented using Simple-Dapp-Signing Algorithm.">
-<meta property="twitter:image" content="https://raw.githubusercontent.com/readme55/sample-dapps/main/meta.png">
-  <title>Dash Platform Sample Dapps</title>
+<meta property="twitter:url" content="http://readme.dashdevs.org/dash-tokens/">
+<meta property="twitter:title" content="Dash Platform Data Tokens">
+<meta property="twitter:description" content="">
+<meta property="twitter:image" content="https://raw.githubusercontent.com/readme55/dash-tokens/main/meta.png">
+<title>Dash Platform Data Tokens</title>
 
   <!-- <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/jumbotron/"> -->
 
@@ -73,7 +72,7 @@
 
 <body>
   <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="#">Sample Dapps by readme</a>
+    <a class="navbar-brand" href="#">Dash Platform Data Tokens</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
       aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -85,13 +84,13 @@
           <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="./Tokens.html">Tokens</a>
+          <a class="nav-link" href="./Tokens.html">Token Manager</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="./Test.html">Test</a>
+          <a class="nav-link" href="./index.html">Voting</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="./Dao.html">Dao</a>
+          <a class="nav-link" href="./index.html">Dao</a>
         </li>
         <!-- <li class="nav-item">
           <a class="nav-link disabled" href="#">Disabled</a>
@@ -124,11 +123,10 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
       <div class="container">
-        <h1 class="display-3">Dash Platform Sample Dapps</h1>
-        <p>This is a collection of simple <a href="https://dashplatform.readme.io/docs/introduction-what-is-dash-platform" target="_blank">Dash Platform</a> Dapps to showcase how they can be implemented by third-party
-          developers. These samples use the "Simple Dapp Signing" algorithm implemented by <a
-            href="https://github.com/readme55/Dash-Chrome-Wallet" target="_blank">Chrome Wallet</a>. <b>This is not an
-            official solution!</b><br><br>
+        <h1 class="display-3">Dash Platform Data Tokens</h1>
+        <p>This is a collection of Prototype Token Dapps implemented on <a href="https://dashplatform.readme.io/docs/introduction-what-is-dash-platform" target="_blank">Dash Platform</a>.
+           These samples use the "Simple Dapp Signing" algorithm implemented by <a
+            href="https://github.com/readme55/Dash-Chrome-Wallet" target="_blank">Chrome Wallet</a>.<br><br>
           Checkout the <a href="https://github.com/readme55/sample-dapps" target="_blank">Dash Sample Dapps</a> GitHub repository to
           learn how to develop your own Dapp using the same method then these samples <a
             href="https://github.com/readme55/sample-dapps/blob/master/src/note-dapp.js"
@@ -148,26 +146,23 @@
       <!-- Example row of columns -->
       <div class="row">
         <div class="col-md-4">
-          <h2>Note</h2>
-          <p>Simple Note Dapp as sample for saving documents on Dash Platform using your Dash Username.
-            The deployed data-contract uses objects for date, title, text and encryption status.
-            To use this dapp you need to "Sign in" and then start the Note-Dapp.
-            Create the note, press "Submit" on the webpage and wait for Chrome Wallet dialog to appear. Then confirm the
-            dialog message.
+          <h2>Token Manager</h2>
+          <p>Create Tokens using your identity id as account. A new Data-Contract for your Token will be created during the process. 
+            You need to read the new contract id from Chrom Wallet and insert it into the Token Contract field. Next Mint the initial supply for the new Token.
+            Thats it! Get Account Balance will fetch the amount of tokens on your account. You can transfer Tokens to any other identity id and even attach a message.
+            The Token Explorer will show transaction history of any other account when inserting his identity id.
           </p>
-          <p><a class="btn btn-secondary" href="./Note.html" role="button">Start &raquo;</a></p>
+          <p><a class="btn btn-secondary" href="./Tokens.html" role="button">Start &raquo;</a></p>
         </div>
         <div class="col-md-4">
-          <h2>PayMe</h2>
-          <p>PayMe is a simple example to submit a payment requested from a website to Chrome Wallet.
-            It uses your Dash Username and you just have to "Confirm" the payment request in the Wallet after
-            submission.
+          <h2>Voting</h2>
+          <p>...
           </p>
-          <p><a class="btn btn-secondary" href="./PayMe.html" role="button">Start &raquo;</a></p>
+          <p><a class="btn btn-secondary" href="#" role="button">Start &raquo;</a></p>
         </div>
         <div class="col-md-4">
-          <h2>Pet Shop</h2>
-          <p>Pet Shop is a Dash Platform port of the famous Ethereum Dapp example.</p>
+          <h2>DAO</h2>
+          <p>...</p>
           <p><a class="btn btn-secondary" href="#" role="button">View details &raquo;</a></p>
         </div>
       </div>
@@ -179,7 +174,7 @@
   </main>
 
   <footer class="container">
-    <p>&copy; readme 2020</p>
+    <!-- <p>&copy; readme 2020</p> -->
   </footer>
   <!-- <script src="./assets/js/jquery-slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
   <script src="./assets/js/jquery-slim.min.js"></script>
