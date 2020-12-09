@@ -79,7 +79,7 @@ const dataContractJson = {
             },
             // txnr: {
             //     type: "integer",
-            //     "maxLength": 100000
+            //     "maxLength": 20
             // },
             balance: {
                 type: "number"
@@ -267,6 +267,7 @@ const getValidDocumentChain = function (documents) {
 
     let processedIdentList = [];
 
+    // for N transactions in the doc-chain and M users it iterates through M*N entries and writing N entries (no duplicates).
     const recursiveBalanceValidation = function (identityId, userBalance) {
 
         // process user balance and invalidate validDocs Array if found
@@ -288,12 +289,10 @@ const getValidDocumentChain = function (documents) {
                 if (processedIdentList.indexOf(identityId) == -1) {
                     processedIdentList.push(identityId);
                 }
-                // else document is from other identity
-            } else {
-                if (processedIdentList.indexOf(procIdentityId) == -1) {
-                    recursiveBalanceValidation(procIdentityId, 0.0);    // start processing for this identity before continuing (bc need to validate this one first)
-                    processedIdentList.push(procIdentityId);
-                }
+            // else document is from other identity
+            } else if (processedIdentList.indexOf(procIdentityId) == -1) {
+                recursiveBalanceValidation(procIdentityId, 0.0);    // start processing for this identity before continuing (bc need to validate this one first)
+                processedIdentList.push(procIdentityId);
             }
 
             // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
@@ -489,7 +488,6 @@ const getTxHistory = async function (identityId) {
                 historyValid.push(false);
             }
         }
-
     }
 
     // write history output

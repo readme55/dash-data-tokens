@@ -3,6 +3,7 @@
 
 // cloud identID: AfZxsSWVKxDpHkXHQDqhEbyZYmfNcAgKq76TLCab4ZiD
 // dappuser identID: 72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp
+// wealth recycle unit rocket milk defy alter just into inquiry universe cloth
 
 $(document).ready(function () {
 
@@ -12,7 +13,7 @@ $(document).ready(function () {
         $("#signinbutton").val(username)
     }
     // let identityId = sessionStorage.getItem('dash_identityID');
-    let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // testing without login
+    let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // dappuser static for testing
 
 
     // set buttons after load
