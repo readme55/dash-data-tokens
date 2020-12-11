@@ -13,16 +13,15 @@ $(document).ready(function () {
         $("#signinbutton").val(username)
     }
     // let identityId = sessionStorage.getItem('dash_identityID');
-    let identityId = "72xw6JyFKeRjMBNJpEU6vaq9oCpmTMi5dEF7jenN3Btp"  // dappuser static for testing
+    let identityId = "JAzgXxd98fqatRAh754oBC624qgrD6ozULDkvbXKKJK9"  // readme2 static for testing
 
 
     // set buttons after load
     $("#receiveBtn").prop('disabled', true);
     $("#sendBtn").prop('disabled', true);
-    $("#initBtn").prop('disabled', true);
+    // $("#initBtn").prop('disabled', true);
 
-    // set static for testing
-    $("#formTokenContract").val("J1WMq7jEcUNitVaD4SpGM4s2FcHqbMFQ27s2dpnYnwhS");
+    $("#formTokenContract").val("GvKZLofM4oFJh2fSBtQ6TREF2svkUNvhdGCwpB9sskM1");    // Token Contract static for testing, comment to disable
     $("#receiveBtn").prop('disabled', false);
 
     $("#formTokenContract").change(function () {
@@ -112,7 +111,7 @@ $(document).ready(function () {
         const tokenName = $("#formTokenName").val();
         const tokenSymbol = $("#formTokenSymbol").val();
         const tokenDecimals = parseInt($("#formTokenDecimals").val());
-        const tokenSender = identityId;    // dappuser identityId TODO: fetch auto
+        const tokenSender = identityId;
         const tokenRecipient = $("#formWithdrawUser").val().trim();
         const tokenAmount = parseFloat($("#formSendAmount").val());
         const tokenOwner = identityId;

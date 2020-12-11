@@ -17,9 +17,6 @@ const dataContractJson = {
             // {
             //   "properties": [{ "txnr": "asc" }], "unique": true
             // },
-            // {
-            //     "properties": [{ "sender": "asc" }], "unique": false
-            // },
             {
                 "properties": [{ "$ownerId": "asc" }], "unique": false
             },
@@ -40,6 +37,7 @@ const dataContractJson = {
             name: {
                 type: "string",
                 minLength: 1,
+                maxLength: 20,
                 pattern: "^[a-zA-Z0-9 ]+$"
             },
             symbol: {
@@ -89,10 +87,12 @@ const dataContractJson = {
             },
             lastValIndTransfer: {
                 type: "integer",
+                // minLength: 1,
                 maxLength: 5
             },
             lastValIndTransferFrom: {
                 type: "integer",
+                // minLength: 1,
                 maxLength: 5
             },
         },
@@ -501,7 +501,7 @@ const getTxHistory = async function (identityId) {
 
 
 
-const testMass = async function () {
+const evaluation = async function () {
 
     // test mass documents in browser, result: 3sec for 100M values
     let massLen = 100000000;
