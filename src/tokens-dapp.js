@@ -12,8 +12,8 @@ $(document).ready(function () {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username)
     }
-    // let identityId = sessionStorage.getItem('dash_identityID');
-    let identityId = "JAzgXxd98fqatRAh754oBC624qgrD6ozULDkvbXKKJK9"  // readme2 static for testing
+    let identityId = sessionStorage.getItem('dash_identityID');
+    // let identityId = "JAzgXxd98fqatRAh754oBC624qgrD6ozULDkvbXKKJK9"  // readme2 static for testing
 
 
     // set buttons after load
@@ -21,7 +21,7 @@ $(document).ready(function () {
     $("#sendBtn").prop('disabled', true);
     // $("#initBtn").prop('disabled', true);
 
-    $("#formTokenContract").val("GvKZLofM4oFJh2fSBtQ6TREF2svkUNvhdGCwpB9sskM1");    // Token Contract static for testing, comment to disable
+    $("#formTokenContract").val("F4KzcS4asCiSRSQvG9dtY3ydD6dK8aR4e6zxG99yLk16");    // Token Contract static for testing, comment to disable
     $("#receiveBtn").prop('disabled', false);
 
     $("#formTokenContract").change(function () {
@@ -67,6 +67,7 @@ $(document).ready(function () {
     $("#initBtn").click(async function () {
         console.log("click init token amount")
         $("#initBtn").prop('disabled', true);
+        $("#receiveBtn").prop('disabled', true);
 
         const tokenContractId = $("#formTokenContract").val().trim();
         const tokenVersion = 1;
@@ -75,9 +76,9 @@ $(document).ready(function () {
         const tokenDecimals = parseInt($("#formTokenDecimals").val());
         const tokenSender = '1'.repeat(42);    // could force check same identityId then dataContract creator and initiator...
         const tokenRecipient = identityId;   // dapp login user identityId
-        const tokenAmount = parseFloat($("#formTokenAmount").val());    // Init token amount value (not send amount)
+        const tokenAmount = fromUserRep($("#formSendAmount").val()).toString();    // Init token amount value (not send amount)
         const tokenOwner = identityId;  // TODO remove bc redundant with ownerId ? perhaps need for approve and transferFrom !
-        const tokenBalance = parseFloat(0.0);   // TODO: check whats standard here
+        const tokenBalance = "0";   // TODO: check whats standard here
 
         const initDocumentTxJson = {
             version: tokenVersion,
@@ -96,6 +97,40 @@ $(document).ready(function () {
         await mintTokenDocument('Token Dapp', username, tokenContractId, initDocumentTxJson);
 
         // $("#initBtn").prop('disabled', false);
+        $("#receiveBtn").prop('disabled', false);
+        console.log("done")
+
+    });
+
+
+    $("#receiveBtn").click(async function () {
+
+        console.log("click validate balance")
+        $("#receiveBtn").prop('disabled', true);
+
+        const tokenContractId = $("#formTokenContract").val().trim();
+        await processDocumentChain(tokenContractId, identityId);
+
+        $("#formTokenName").val(name())
+        $("#formTokenSymbol").val(symbol())
+        $("#formTokenDecimals").val(decimals())
+
+        // token amount and balance - divide by decimals to get user representation
+        $("#formTokenAmount").val( toUserRep(initialSupply(), decimals()) );
+        $("#formBalance").val( toUserRep(getUserBalance(), decimals()) );
+
+        document.getElementById("formAppendTokenSymbol").innerHTML = symbol();
+        document.getElementById("formAppendTokenSymbol2").innerHTML = symbol();
+
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + toUserRep(getUserBalance(), decimals()) + " " + symbol() + ")";
+
+        $("#receiveBtn").prop('disabled', false);
+
+        $("#sendBtn").prop('disabled', false);  // activate sendBtn when validated successfully
+
+        let historyOutput = await getTxHistory(identityId);
+        $("#formHistoryOutput").val(historyOutput)
+
         console.log("done")
 
     });
@@ -113,9 +148,9 @@ $(document).ready(function () {
         const tokenDecimals = parseInt($("#formTokenDecimals").val());
         const tokenSender = identityId;
         const tokenRecipient = $("#formWithdrawUser").val().trim();
-        const tokenAmount = parseFloat($("#formSendAmount").val());
+        const tokenAmount = fromUserRep($("#formSendAmount").val()).toString();
         const tokenOwner = identityId;
-        const tokenBalance = parseFloat($("#formBalance").val());
+        const tokenBalance = fromUserRep($("#formBalance").val()).toString();
         const tokenData = $("#formSendData").val();
 
         console.log(tokenRecipient)
@@ -143,37 +178,6 @@ $(document).ready(function () {
     });
 
 
-    $("#receiveBtn").click(async function () {
-
-        console.log("click validate balance")
-        $("#receiveBtn").prop('disabled', true);
-
-        const tokenContractId = $("#formTokenContract").val().trim();
-        await processDocumentChain(tokenContractId, identityId);
-
-        $("#formTokenName").val(name())
-        $("#formTokenSymbol").val(symbol())
-        $("#formTokenAmount").val(initialSupply())
-        $("#formTokenDecimals").val(decimals())
-        $("#formBalance").val(getUserBalance());
-
-        document.getElementById("formAppendTokenSymbol").innerHTML = symbol();
-        document.getElementById("formAppendTokenSymbol2").innerHTML = symbol();
-
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + getUserBalance() + " " + symbol() + ")";
-
-        $("#receiveBtn").prop('disabled', false);
-
-        $("#sendBtn").prop('disabled', false);  // activate sendBtn when validated successfully
-
-        let historyOutput = await getTxHistory(identityId);
-        $("#formHistoryOutput").val(historyOutput)
-
-        console.log("done")
-
-    });
-
-
     $("#searchBtn").click(async function () {
 
         console.log("Identity Explorer")
@@ -186,9 +190,9 @@ $(document).ready(function () {
 
         $("#formTokenName").val(name())
         $("#formTokenSymbol").val(symbol())
-        $("#formTokenAmount").val(initialSupply())
+        $("#formTokenAmount").val( toUserRep(initialSupply(), decimals()) )
         $("#formTokenDecimals").val(decimals())
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + getUserBalance() + " " + symbol() + ")";
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + toUserRep(getUserBalance(), decimals()) + " " + symbol() + ")";
 
         let historyOutput = await getTxHistory(exploreIdentity);
         $("#formHistoryOutput").val(historyOutput)

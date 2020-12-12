@@ -1,9 +1,11 @@
+// const assert = require('assert').strict;
+// const assert = require('assert');
 
 // client.getApps().set("tokenContractLoc", { "contractId": tokenContractId });  // may change dynamic, not needed as apps object since CW submits
 
 let documents = [];
-let localUserBalance = 0.0;
-let localBalanceHistory = [];
+let identityBalance = 0n;
+let identityBalanceHistory = [];
 let indWithdrawals = [];
 let indDeposits = [];
 let isValidDoc = [];
@@ -11,6 +13,7 @@ let isValidDoc = [];
 
 // NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for transferFrom ERC-20 Method.
 // Balance and ValidIndexes not needed for processing (could be removed), but kept for now (may be used for runtime optimisation)
+// type string for amount and balance with 78 decimals like uint256 has
 const dataContractJson = {
     token: {
         indices: [
@@ -67,7 +70,10 @@ const dataContractJson = {
 
             },
             amount: {
-                type: "number"
+                type: "string",
+                minLength: 1,
+                maxLength: 78,
+                pattern: "^[0123456789]+$"
             },
             owner: {
                 type: "string",
@@ -80,7 +86,10 @@ const dataContractJson = {
             //     "maxLength": 20
             // },
             balance: {
-                type: "number"
+                type: "string",
+                minLength: 1,
+                maxLength: 78,
+                pattern: "^[0123456789]+$"
             },
             data: {
                 type: "string",
@@ -136,7 +145,7 @@ const sendTokenDocument = async function (dappname, username, contractId, docume
 // token attributes
 let tokenName = '';
 let tokenSymbol = '';
-let tokenInitSupply = '';
+let tokenInitSupply = 0n;
 let tokenDecimal = '';
 
 const name = function () {
@@ -156,7 +165,7 @@ const initialSupply = function () {
     return tokenInitSupply;
 }
 const getUserBalance = function () {
-    return localUserBalance;
+    return identityBalance;
 }
 
 // const transfer = function (recipient, amount) {
@@ -212,10 +221,12 @@ const getDocumentChain = async function (tokenContractId) {
         console.log("ERROR: Token Contract Broken! Token Symbol is undefined in Token Contract genesis document")
     } else if (documents[0].data.decimals == undefined) {
         console.log("ERROR: Token Contract Broken! Token Decimal is undefined in Token Contract genesis document")
+    } else if (documents[0].data.amount == undefined || BigInt(documents[0].data.amount) <= 0n ) {
+        console.log("ERROR: Token Contract Broken! Token Amount is undefined or less-equal zero in Token Contract genesis document")
     } else {
         tokenName = documents[0].data.name;
         tokenSymbol = documents[0].data.symbol
-        tokenInitSupply = documents[0].data.amount
+        tokenInitSupply = BigInt(documents[0].data.amount)
         tokenDecimal = documents[0].data.decimals
     }
 
@@ -234,11 +245,13 @@ const getValidDocumentChain = function (documents) {
         isValidDoc.push(true);
     }
 
+    // TODO: could check for correct symbol, name, decimals also in each tx - currently all derived from genesis document
+
     // validate all documents, skip genesis
     for (let i = 1; i < docslen; i++) {
 
         // validate amount >= zero
-        if (documents[i].data.amount >= 0) {
+        if (BigInt(documents[i].data.amount) >= 0n) {
             // console.log("Validate: amount >= 0 " + i)
         } else {
             console.log("Validate: FALSE (amount >= 0) at index " + i)
@@ -247,7 +260,7 @@ const getValidDocumentChain = function (documents) {
         }
 
         // validate balance >= amount
-        if (documents[i].data.balance >= documents[i].data.amount) {
+        if (BigInt(documents[i].data.balance) >= BigInt(documents[i].data.amount)) {
             // console.log("Validate: balance >= amount " + i)
         } else {
             console.log("Validate: FALSE (balance >= amount) at index " + i)
@@ -257,7 +270,8 @@ const getValidDocumentChain = function (documents) {
 
         // validate document owner id == sender
         if (documents[i].ownerId.toString() == documents[i].data.sender) {
-            console.log("Validate: sender == document ownerId " + i)
+            // console.log("Validate: sender == document ownerId " + i)
+            console.log("Syntax Validation successful: document " + i)
         } else {
             console.log("Validate: FALSE sender == document ownerId " + i)
             isValidDoc[i] = false;
@@ -267,6 +281,7 @@ const getValidDocumentChain = function (documents) {
 
     let processedIdentList = [];
 
+    // Validate given balance in document tx with summed up balance from the genesis document until current document height
     // for N transactions in the doc-chain and M users it iterates through M*N entries and writing N entries (no duplicates).
     const recursiveBalanceValidation = function (identityId, userBalance) {
 
@@ -279,7 +294,7 @@ const getValidDocumentChain = function (documents) {
             // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment to see where optimisation potential
             // if document is owned by own identity
             if (procIdentityId == identityId) {    // if withdrawal or approval (TODO)
-                if (userBalance == documents[i].data.balance) {
+                if (userBalance == BigInt(documents[i].data.balance)) {
                     // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
                 } else {
                     isValidDoc[i] = false;
@@ -291,25 +306,25 @@ const getValidDocumentChain = function (documents) {
                 }
             // else document is from other identity
             } else if (processedIdentList.indexOf(procIdentityId) == -1) {
-                recursiveBalanceValidation(procIdentityId, 0.0);    // start processing for this identity before continuing (bc need to validate this one first)
+                recursiveBalanceValidation(procIdentityId, 0n);    // start processing for this identity before continuing (bc need to validate this one first)
                 processedIdentList.push(procIdentityId);
             }
 
             // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
             // Sum up Balance after Withdrawal  - skip genesis document
             if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
-                userBalance += -(documents[i].data.amount);
+                userBalance += -(BigInt(documents[i].data.amount));
                 console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
             }
 
             // Sum up Balance after Deposit
             if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
-                userBalance += documents[i].data.amount;
+                userBalance += BigInt(documents[i].data.amount);
                 console.log("index " + i + ": Deposit - Balance for " + identityId + " is " + userBalance)
             }
         }
     }
-    recursiveBalanceValidation(documents[0].ownerId.toString(), 0.0);   // process all balance attributes and set (in-)validate isValidDoc
+    recursiveBalanceValidation(documents[0].ownerId.toString(), 0n);   // process all balance attributes and set (in-)validate isValidDoc
     console.log("finish recursion")
 
     return isValidDoc;
@@ -317,22 +332,22 @@ const getValidDocumentChain = function (documents) {
 
 const balanceOf = function (identityId) {
 
-    let userBalance = 0.0;
-    localBalanceHistory = [];
+    let userBalance = 0n;   // BigInt
+    identityBalanceHistory = [];    // BigInt list
     let docslen = documents.length;
     for (let i = 0; i < docslen; i++) {
 
         // withdrawal - skip genesis document
         if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
-            userBalance += -(documents[i].data.amount);
-            localBalanceHistory[i] = userBalance;
+            userBalance += -(BigInt(documents[i].data.amount));
+            identityBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Withdrawal " + userBalance)
         }
 
         // deposit
         if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
-            userBalance += documents[i].data.amount;
-            localBalanceHistory[i] = userBalance;
+            userBalance += BigInt(documents[i].data.amount);
+            identityBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Deposit " + userBalance)
         }
 
@@ -434,8 +449,8 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     console.log("++++ Valid document amount is " + isValidDoc.filter(x => x==true).length );    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)
-    localUserBalance = balanceOf(identityId);
-    console.log("++++ Account Balance is " + localUserBalance)
+    identityBalance = balanceOf(identityId);
+    console.log("++++ Account Balance is " + identityBalance)
 
     console.log("++++ Processing withdraw/deposit indexes")
     indWithdrawals = [];
@@ -448,11 +463,11 @@ const processDocumentChain = async function (tokenContractId, identityId) {
 const getTxHistory = async function (identityId) {
 
     // write tx history
-    let historyTx = [];
-    let historyType = [];
-    let historyValid = [];
-    let historyBalance = [];
-    let historyOutput = '';
+    let historyTx = [];         // list of documents.data
+    let historyType = [];       // list of string - "deposit" or "withdraw" 
+    let historyValid = [];      // list of booleans
+    let historyBalance = [];    // list of strings - balance converted to user representation
+    let historyOutput = '';     // result - html output string
 
     // TODO: optimise with query instead of iterating through all documents
     // let queryTxHistory = {
@@ -470,7 +485,7 @@ const getTxHistory = async function (identityId) {
         if (documents[i].data.sender == identityId) {
             historyTx.push(documents[i].data)
             historyType.push("Withdraw")
-            historyBalance.push(localBalanceHistory[i])
+            historyBalance.push(toUserRep(identityBalanceHistory[i], decimals()))
             if (isValidDoc[i]) {
                 historyValid.push(true);
             } else {
@@ -481,7 +496,7 @@ const getTxHistory = async function (identityId) {
         if (documents[i].data.recipient == identityId) {
             historyTx.push(documents[i].data)
             historyType.push("Deposit")
-            historyBalance.push(localBalanceHistory[i])
+            historyBalance.push(toUserRep(identityBalanceHistory[i], decimals()))
             if (isValidDoc[i]) {
                 historyValid.push(true);
             } else {
@@ -491,12 +506,53 @@ const getTxHistory = async function (identityId) {
     }
 
     // write history output
-    historyOutput += "Nr:    Type     | Amount | Balance | Valid |                                   Sender                                    |                                     Recipient                                   |   Message         \n"
+    historyOutput += "Nr:    Type     |    Amount    |    Balance    | Valid |                                Sender                                 |                                  Recipient                                |   Message         \n"
     for (let i = historyTx.length - 1; i >= 0; i--) {
-        historyOutput += i + ":  " + (historyType[i] + " |   " + historyTx[i].amount + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
+        historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals()) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
     }
 
     return historyOutput;
+}
+
+// from BigInt(value) to String with decimal shifted and set
+const toUserRep = function(bigInt, decimals) {
+
+    // Tests if value is truthy - using strict equality
+    // assert.ok(typeof bigInt === 'bigint');
+    // assert.ok(typeof decimals === 'integer');
+
+    let strBigInt = bigInt.toString();
+
+    let part1 = strBigInt.substring(0,strBigInt.length-decimals);
+    let part2 = strBigInt.substring(strBigInt.length-decimals);
+
+    if(part2.length < decimals) {
+        part2 = "0".repeat(decimals - strBigInt.length) + part2;
+    }
+    
+    let resStr= part1 + "." + part2;
+
+    return resStr;
+}
+
+// from String(value) to BigInt with decimal shifted and removed
+const fromUserRep = function(strNumber, decimals) {
+
+    // Tests if value is truthy - using strict equality
+    // assert.ok(typeof bigInt === 'bigint');
+    // assert.ok(typeof decimals === 'integer');
+
+    let parts = strNumber.split(".");
+
+    
+    if(parts[1] == undefined) {
+        parts[1] = '';
+    }
+    let decimalLen = parts[1].length;
+    
+    let resBigInt = BigInt( parts[0] + parts[1] + "0".repeat(8-decimalLen) );
+
+    return resBigInt;
 }
 
 
