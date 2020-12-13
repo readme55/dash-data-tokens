@@ -158,7 +158,7 @@ const decimals = function () {
     return tokenDecimal;
 }
 const totalSupply = function() {
-    return tokenInitSupply;    // ignoring zero address and without further minting, TODO add logic to validate balance on-chain
+    return tokenInitSupply;    // ignoring zero address and without further minting, TODO add logic to validate totalSupply on-chain
 }
 
 const initialSupply = function () {
@@ -263,11 +263,11 @@ const getValidDocumentChain = function (documents) {
     for (let i = 1; i < docslen; i++) {
 
         // json-schema pattern for amount denies negative, empty and non-numeric amount!
-        // validate amount >= zero
+        // validate amount >= zero (allow 0-value transfer)
         if (BigInt(documents[i].data.amount) >= 0n) {
             // console.log("Validate: amount >= 0 " + i)
         } else {
-            console.log("Validate: FALSE (amount >= 0) at index " + i)
+            console.log("Validate: FALSE (amount >= 0) at index " + i); 
             validDocList[i] = false;
             continue;
         }
@@ -326,7 +326,7 @@ const getValidDocumentChain = function (documents) {
             // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
             // Sum up Balance after Withdrawal  - skip genesis document
             if (documents[i].ownerId.toString() == identityId && validDocList[i] == true && i != 0) {
-                userBalance += -(BigInt(documents[i].data.amount));
+                userBalance -= BigInt(documents[i].data.amount);
                 console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
             }
 
@@ -448,7 +448,7 @@ const processAllIndexes = function (identityId) {
 const processDocumentChain = async function (tokenContractId, identityId) {
 
     if(tokenContractId == "") {
-        console.log("ERROR: Insert contract id")
+        console.log("ERROR: Insert Contract id")
         return;
     }
     if(identityId == "") {
