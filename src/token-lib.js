@@ -8,7 +8,7 @@ let identityBalance = 0n;
 let identityBalanceHistory = [];
 let indWithdrawals = [];
 let indDeposits = [];
-let isValidDoc = [];
+let validDocList = [];
 
 
 // NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for transferFrom ERC-20 Method.
@@ -158,7 +158,7 @@ const decimals = function () {
     return tokenDecimal;
 }
 const totalSupply = function() {
-    return tokenInitSupply;    // ignoring zero address and without further minting
+    return tokenInitSupply;    // ignoring zero address and without further minting, TODO add logic to validate balance on-chain
 }
 
 const initialSupply = function () {
@@ -167,6 +167,18 @@ const initialSupply = function () {
 const getUserBalance = function () {
     return identityBalance;
 }
+
+// TODO: check - added for token-ui-lib
+const getDocuments = function() {
+    return documents;
+}
+const getValidDocList = function() {
+    return validDocList;
+}
+const getIdentityBalanceHistory = function() {
+    return identityBalanceHistory;
+}
+
 
 // const transfer = function (recipient, amount) {
 // }
@@ -221,8 +233,8 @@ const getDocumentChain = async function (tokenContractId) {
         console.log("ERROR: Token Contract Broken! Token Symbol is undefined in Token Contract genesis document")
     } else if (documents[0].data.decimals == undefined) {
         console.log("ERROR: Token Contract Broken! Token Decimal is undefined in Token Contract genesis document")
-    } else if (documents[0].data.amount == undefined || BigInt(documents[0].data.amount) <= 0n ) {
-        console.log("ERROR: Token Contract Broken! Token Amount is undefined or less-equal zero in Token Contract genesis document")
+    } else if (documents[0].data.amount == undefined || BigInt(documents[0].data.amount) == 0n ) {
+        console.log("ERROR: Token Contract Broken! Token Amount is undefined or equals zero in Token Contract genesis document")
     } else {
         tokenName = documents[0].data.name;
         tokenSymbol = documents[0].data.symbol
@@ -240,9 +252,9 @@ const getValidDocumentChain = function (documents) {
     let docslen = documents.length;
 
     // init boolean array with true
-    let isValidDoc = [];
+    let validDocList = [];
     for (let i = 0; i < docslen; i++) {
-        isValidDoc.push(true);
+        validDocList.push(true);
     }
 
     // TODO: could check for correct symbol, name, decimals also in each tx - currently all derived from genesis document
@@ -250,12 +262,13 @@ const getValidDocumentChain = function (documents) {
     // validate all documents, skip genesis
     for (let i = 1; i < docslen; i++) {
 
+        // json-schema pattern for amount denies negative, empty and non-numeric amount!
         // validate amount >= zero
         if (BigInt(documents[i].data.amount) >= 0n) {
             // console.log("Validate: amount >= 0 " + i)
         } else {
             console.log("Validate: FALSE (amount >= 0) at index " + i)
-            isValidDoc[i] = false;
+            validDocList[i] = false;
             continue;
         }
 
@@ -264,7 +277,7 @@ const getValidDocumentChain = function (documents) {
             // console.log("Validate: balance >= amount " + i)
         } else {
             console.log("Validate: FALSE (balance >= amount) at index " + i)
-            isValidDoc[i] = false;
+            validDocList[i] = false;
             continue;
         }
 
@@ -274,7 +287,7 @@ const getValidDocumentChain = function (documents) {
             console.log("Syntax Validation successful: document " + i)
         } else {
             console.log("Validate: FALSE sender == document ownerId " + i)
-            isValidDoc[i] = false;
+            validDocList[i] = false;
             continue;
         }
     }
@@ -297,7 +310,7 @@ const getValidDocumentChain = function (documents) {
                 if (userBalance == BigInt(documents[i].data.balance)) {
                     // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
                 } else {
-                    isValidDoc[i] = false;
+                    validDocList[i] = false;
                     // console.log("index " + i + " Validate: FALSE (invalid balance)")
                 }
 
@@ -312,13 +325,13 @@ const getValidDocumentChain = function (documents) {
 
             // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
             // Sum up Balance after Withdrawal  - skip genesis document
-            if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
+            if (documents[i].ownerId.toString() == identityId && validDocList[i] == true && i != 0) {
                 userBalance += -(BigInt(documents[i].data.amount));
                 console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
             }
 
             // Sum up Balance after Deposit
-            if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
+            if (documents[i].data.recipient == identityId && validDocList[i] == true) {
                 userBalance += BigInt(documents[i].data.amount);
                 console.log("index " + i + ": Deposit - Balance for " + identityId + " is " + userBalance)
             }
@@ -327,7 +340,7 @@ const getValidDocumentChain = function (documents) {
     recursiveBalanceValidation(documents[0].ownerId.toString(), 0n);   // process all balance attributes and set (in-)validate isValidDoc
     console.log("finish recursion")
 
-    return isValidDoc;
+    return validDocList;
 }
 
 const balanceOf = function (identityId) {
@@ -338,14 +351,14 @@ const balanceOf = function (identityId) {
     for (let i = 0; i < docslen; i++) {
 
         // withdrawal - skip genesis document
-        if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true && i != 0) {
+        if (documents[i].ownerId.toString() == identityId && validDocList[i] == true && i != 0) {
             userBalance += -(BigInt(documents[i].data.amount));
             identityBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Withdrawal " + userBalance)
         }
 
         // deposit
-        if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
+        if (documents[i].data.recipient == identityId && validDocList[i] == true) {
             userBalance += BigInt(documents[i].data.amount);
             identityBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Deposit " + userBalance)
@@ -355,6 +368,8 @@ const balanceOf = function (identityId) {
     return userBalance;
 }
 
+// NOT USED YET - optimised approach for index processing.
+// Probably just remove all index processing since its not adding extra security (as planned)
 const processIndexesOptimized = function (identityId) {
 
     let docslen = documents.length;
@@ -362,7 +377,7 @@ const processIndexesOptimized = function (identityId) {
     // search last withdraw from identityId
     for (let i = docslen - 1; i >= 0; i--) {
 
-        if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true) {
+        if (documents[i].ownerId.toString() == identityId && validDocList[i] == true) {
             console.log("index " + i + ": Found last withdrawal from this identityId")
             indWithdrawals.push(i);
             // break;   // dont break, calc all withdrawals for transfer history
@@ -373,7 +388,7 @@ const processIndexesOptimized = function (identityId) {
     for (let i = docslen - 1; i > indWithdrawals[0]; i--) {  // process only since last withdraw (optimization)
         console.log(i)
         console.log(documents[i].data.recipient)
-        if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
+        if (documents[i].data.recipient == identityId && validDocList[i] == true) {
             indDeposits.push(i);
             console.log("index " + i + ": Found last valid deposit since last withdraw for this identityId")
         }
@@ -404,6 +419,7 @@ const processIndexesOptimized = function (identityId) {
     // }
 }
 
+// Probably just remove all index processing since its not adding extra security (as planned)
 // not used for validation, could be removed (keep until sure)
 const processAllIndexes = function (identityId) {
 
@@ -412,7 +428,7 @@ const processAllIndexes = function (identityId) {
     // search last withdraw from identityId
     for (let i = docslen - 1; i >= 1; i--) {    // skip genesis document
 
-        if (documents[i].ownerId.toString() == identityId && isValidDoc[i] == true) {
+        if (documents[i].ownerId.toString() == identityId && validDocList[i] == true) {
             console.log("index " + i + ": Found last valid withdrawal from this identityId")
             indWithdrawals.push(i);
         }
@@ -421,7 +437,7 @@ const processAllIndexes = function (identityId) {
     // search last deposits to this identityId 
     for (let i = docslen - 1; i >= 0; i--) { // process all deposits (including genesis document)
 
-        if (documents[i].data.recipient == identityId && isValidDoc[i] == true) {
+        if (documents[i].data.recipient == identityId && validDocList[i] == true) {
             indDeposits.push(i);
             console.log("index " + i + ": Found last valid deposit for this identityId");
         }
@@ -445,8 +461,8 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     console.log("++++ Fetched " + documents.length + " documents")
 
     console.log("++++ Processing valid Documents:")
-    isValidDoc = getValidDocumentChain(documents);
-    console.log("++++ Valid document amount is " + isValidDoc.filter(x => x==true).length );    // TODO: comment for production
+    validDocList = getValidDocumentChain(documents);
+    console.log("++++ Valid document amount is " + validDocList.filter(x => x==true).length );    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)
     identityBalance = balanceOf(identityId);
@@ -456,127 +472,5 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     indWithdrawals = [];
     indDeposits = [];
     processAllIndexes(identityId);
-
-}
-
-// TODO can only be run after validDocs was processed
-const getTxHistory = async function (identityId) {
-
-    // write tx history
-    let historyTx = [];         // list of documents.data
-    let historyType = [];       // list of string - "deposit" or "withdraw" 
-    let historyValid = [];      // list of booleans
-    let historyBalance = [];    // list of strings - balance converted to user representation
-    let historyOutput = '';     // result - html output string
-
-    // TODO: optimise with query instead of iterating through all documents
-    // let queryTxHistory = {
-    //     "where": [
-    //         ["$ownerId", "==", identityId]
-    //         // ["sender", "==", identityId]
-    //     ],
-    //     "startAt": 1
-    // }
-    // docsHistory = await client.platform.documents.get('tokenContractLoc.token', queryTxHistory);
-    // docsHistoryLen = docsHistory.length;
-
-    for (let i = 0; i < documents.length; i++) {
-        // check for sender documents
-        if (documents[i].data.sender == identityId) {
-            historyTx.push(documents[i].data)
-            historyType.push("Withdraw")
-            historyBalance.push(toUserRep(identityBalanceHistory[i], decimals()))
-            if (isValidDoc[i]) {
-                historyValid.push(true);
-            } else {
-                historyValid.push(false);
-            }
-        }
-        // check for recipient documents
-        if (documents[i].data.recipient == identityId) {
-            historyTx.push(documents[i].data)
-            historyType.push("Deposit")
-            historyBalance.push(toUserRep(identityBalanceHistory[i], decimals()))
-            if (isValidDoc[i]) {
-                historyValid.push(true);
-            } else {
-                historyValid.push(false);
-            }
-        }
-    }
-
-    // write history output
-    historyOutput += "Nr:    Type     |    Amount    |    Balance    | Valid |                                Sender                                 |                                  Recipient                                |   Message         \n"
-    for (let i = historyTx.length - 1; i >= 0; i--) {
-        historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals()) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
-    }
-
-    return historyOutput;
-}
-
-// from BigInt(value) to String with decimal shifted and set
-const toUserRep = function(bigInt, decimals) {
-
-    // Tests if value is truthy - using strict equality
-    // assert.ok(typeof bigInt === 'bigint');
-    // assert.ok(typeof decimals === 'integer');
-
-    let strBigInt = bigInt.toString();
-
-    let part1 = strBigInt.substring(0,strBigInt.length-decimals);
-    let part2 = strBigInt.substring(strBigInt.length-decimals);
-
-    if(part2.length < decimals) {
-        part2 = "0".repeat(decimals - strBigInt.length) + part2;
-    }
-    
-    let resStr= part1 + "." + part2;
-
-    return resStr;
-}
-
-// from String(value) to BigInt with decimal shifted and removed
-const fromUserRep = function(strNumber, decimals) {
-
-    // Tests if value is truthy - using strict equality
-    // assert.ok(typeof bigInt === 'bigint');
-    // assert.ok(typeof decimals === 'integer');
-
-    let parts = strNumber.split(".");
-
-    
-    if(parts[1] == undefined) {
-        parts[1] = '';
-    }
-    let decimalLen = parts[1].length;
-    
-    let resBigInt = BigInt( parts[0] + parts[1] + "0".repeat(8-decimalLen) );
-
-    return resBigInt;
-}
-
-
-
-const evaluation = async function () {
-
-    // test mass documents in browser, result: 3sec for 100M values
-    let massLen = 100000000;
-    console.log("creating data set with " + massLen + " values")
-    let start = new Date().getTime();   // Remember when we started
-    let mass = [];
-    let result = [];
-    let rand = 0;
-    for (let i = 0; i < massLen; i++) {
-        rand = Math.floor(Math.random() * 10);
-        mass.push(rand);
-        // console.log(rand)
-    }
-    console.log("finish creating dataset, processing now")
-    for (let i = 0; i < massLen; i++) {
-        if (mass[i] == 1) result.push(mass[i]);
-    }
-    let end = new Date().getTime(); // Remember when we finished
-    console.log(end - start);   // Now calculate and output the difference
-    console.log("finish processing, found " + result.length + " matching values")
 
 }

@@ -12,8 +12,8 @@ $(document).ready(function () {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username)
     }
-    let identityId = sessionStorage.getItem('dash_identityID');
-    // let identityId = "JAzgXxd98fqatRAh754oBC624qgrD6ozULDkvbXKKJK9"  // readme2 static for testing
+    // let identityId = sessionStorage.getItem('dash_identityID');
+    let identityId = "JAzgXxd98fqatRAh754oBC624qgrD6ozULDkvbXKKJK9"  // readme2 static for testing
 
 
     // set buttons after load
@@ -128,7 +128,7 @@ $(document).ready(function () {
 
         $("#sendBtn").prop('disabled', false);  // activate sendBtn when validated successfully
 
-        let historyOutput = await getTxHistory(identityId);
+        let historyOutput = await getTxHistory(identityId, getDocuments(), getValidDocList(), getIdentityBalanceHistory(), decimals());
         $("#formHistoryOutput").val(historyOutput)
 
         console.log("done")
@@ -194,7 +194,7 @@ $(document).ready(function () {
         $("#formTokenDecimals").val(decimals())
         document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + toUserRep(getUserBalance(), decimals()) + " " + symbol() + ")";
 
-        let historyOutput = await getTxHistory(exploreIdentity);
+        let historyOutput = await getTxHistory(exploreIdentity, getDocuments(), getValidDocList(), getIdentityBalanceHistory(), decimals());
         $("#formHistoryOutput").val(historyOutput)
 
         $("#searchBtn").prop('disabled', false);
