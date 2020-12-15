@@ -88,7 +88,7 @@ $(document).ready(function () {
                     timestamp: new Date().toUTCString(),
                     STcontract: messageContractId,
                     STdocument: 'message',
-                    STcontent: '{ "header" : "Response Login", "dappname" : "Simple Browser Dapp", "reference" : "' + inputUsername + '", "STcontract" : "' + messageContractId + '", "STdocument" : "message" }',
+                    STcontent: '{ "header" : "Response Login", "dappname" : "Simple Browser Dapp", "reference" : "' + inputUsername + '", "timestamp" : "' + new Date().toUTCString() + '", "STcontract" : "' + messageContractId + '", "STdocument" : "message" }',
                 }
 
                 // Create the note document
