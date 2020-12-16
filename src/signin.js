@@ -113,7 +113,7 @@ $(document).ready(function () {
                 client.disconnect();
             }
         };
-        await submitAuthRequest();
+        submitAuthRequest();
 
 
         console.log("start polling for Authentication Response")
