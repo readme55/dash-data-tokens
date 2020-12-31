@@ -1,8 +1,6 @@
-const dappMnemonic = 'protect horror stove scrub foster brave air ski song bitter stomach siren';
-const dappIdentityId = 'Be9CKRUEXJHro4uzmX8xdw4E5JqRMao1TSWDCDVfBdvP';
-const messageContractId = 'CfHbvNx8ZJfhoizqCDawZK53iqyuJXdqwzQ8eVh58bjE';
-const noteContractId = 'CscMg7A5qwWSFz8SmV45uP1WmeaDaS88fdo2SqxiKrxT';
-const dappAddress = 'yj2nz9VDUUPFF6StXswBD9gzEPDtAFhc5A'
-const dpnsContractID = '3VvS19qomuGSbEYWbTsRzeuRgawU3yK4fPMzLrbV62u8';
-
-
+const dappMnemonic = 'era message genuine crystal margin cricket fabric address tank omit swing large';
+const dappIdentityId = 'HK1jnhxWMDuoEwkvKXTXFR5WeTYzx4Vm9C7Yx9qPhWXC';
+const messageContractId = '3coTShwTvmKiySpwmDDzRJ9FGQx4RNLdawLttT9RNxXa';
+const noteContractId = '9PiTpFPE4BC9Ugo2etsD2UDntv37qgHWoj67oW8fWhP6';
+const dappAddress = 'yMxELPfsPbn5UienyykyySLJ4TA3QQCqw5'
+const dpnsContractID = '36ez8VqoDbR8NkdXwFaf9Tp8ukBdQxN8eYs8JNMnUyKz';
