@@ -12,16 +12,17 @@ $(document).ready(function () {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username)
     }
-    // let identityId = sessionStorage.getItem('dash_identityID');
-    let identityId = "JAzgXxd98fqatRAh754oBC624qgrD6ozULDkvbXKKJK9"  // readme2 static for testing
+    let identityId = sessionStorage.getItem('dash_identityID');
+    // let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // readme static for testing
 
+     $("#formTokenContract").val("DY6KmhAsLqrkTxJWA7KAJA3vR4wHhExHqSYXLWitdxuu");    // Token Contract static for testing, comment to disable
 
     // set buttons after load
     $("#receiveBtn").prop('disabled', true);
     $("#sendBtn").prop('disabled', true);
     // $("#initBtn").prop('disabled', true);
 
-    $("#formTokenContract").val("F4KzcS4asCiSRSQvG9dtY3ydD6dK8aR4e6zxG99yLk16");    // Token Contract static for testing, comment to disable
+    
     $("#receiveBtn").prop('disabled', false);
 
     $("#formTokenContract").change(function () {
@@ -46,7 +47,6 @@ $(document).ready(function () {
         }
     });
 
-    
 
     // $("#exampleFormControlUser").val(dappAddress)    // remove ? not used in html
 
@@ -54,7 +54,6 @@ $(document).ready(function () {
 
         console.log("click create data contract")
         $("#createBtn").prop('disabled', true);
-        
 
         await createTokenContract('Token Dapp', username);
 
@@ -76,7 +75,7 @@ $(document).ready(function () {
         const tokenDecimals = parseInt($("#formTokenDecimals").val());
         const tokenSender = '1'.repeat(42);    // could force check same identityId then dataContract creator and initiator...
         const tokenRecipient = identityId;   // dapp login user identityId
-        const tokenAmount = fromUserRep($("#formSendAmount").val()).toString();    // Init token amount value (not send amount)
+        const tokenAmount = fromUserRep($("#formTokenAmount").val()).toString();    // Init token amount value
         const tokenOwner = identityId;  // TODO remove bc redundant with ownerId ? perhaps need for approve and transferFrom !
         const tokenBalance = "0";   // TODO: check whats standard here
 

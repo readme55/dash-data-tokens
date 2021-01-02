@@ -22,7 +22,7 @@ $(document).ready(function () {
 
         // Submit a document ("Request Document ST") to the Users Wallet
         clientOpts = {};
-        clientOpts.network = 'evonet';
+        clientOpts.network = dashNetwork;
         clientOpts.wallet = {};
         clientOpts.wallet.mnemonic = dappMnemonic;
 
@@ -46,7 +46,7 @@ $(document).ready(function () {
 
                 const identityIdRecord = await client.platform.names.resolve(inputUsername.toLowerCase() + ".dash");
                 identityId = identityIdRecord.data.records.dashUniqueIdentityId.toString()
-                let queryJson = JSON.parse(queryString);
+                // let queryJson = JSON.parse(queryString);
 
                 // const documents = await client.platform.documents.get(recordLocator, queryJson);
                 // console.log(documents)
@@ -59,14 +59,14 @@ $(document).ready(function () {
                 //     identityID = documents[0].ownerId.toString()
                 //     console.log("saved Identity ID")
                 // }
-                    console.log("DocumentID for user " + inputUsername + ": " + identityIdRecord.id.toString())
-                    console.log("Identity for user " + inputUsername + ": " + identityId)
-                    console.log("saved Identity ID")
+                console.log("DocumentID for user " + inputUsername + ": " + identityIdRecord.id.toString())
+                console.log("Identity for user " + inputUsername + ": " + identityId)
+                console.log("saved Identity ID")
                 
             } catch (e) {
                 console.error('Something went wrong:', e);
             } finally {
-                client.disconnect()
+                // client.disconnect()
             }
         }
         await getIdentityId();
@@ -77,7 +77,7 @@ $(document).ready(function () {
         const submitAuthRequest = async function () {
 
             try {
-                const identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
+                let identity = await client.platform.identities.get(dappIdentityId);  // dapp identity
 
                 // create document
                 docProperties = {
@@ -110,7 +110,7 @@ $(document).ready(function () {
                 console.error('Something went wrong:', e);
             } finally {
                 console.log("submited Request Document ST for user: " + inputUsername)
-                client.disconnect();
+                // client.disconnect();
             }
         };
         submitAuthRequest();
@@ -146,7 +146,7 @@ $(document).ready(function () {
                         console.log("Received valid Authentication Response")
                         return true;
                     }
-                    await new Promise(r => setTimeout(r, 1500));  // sleep x ms
+                    await new Promise(r => setTimeout(r, 3000));  // sleep x ms
                     if (documents.length >= 1) nStart++;
                 }
                 // return false;
@@ -154,7 +154,7 @@ $(document).ready(function () {
             } catch (e) {
                 console.error('Something went wrong:', e);
             } finally {
-                client.disconnect()
+                // client.disconnect()
             }
         }
         let response = await pollAuthResponse();

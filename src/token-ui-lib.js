@@ -1,5 +1,7 @@
 const getTxHistory = async function (identityId, documents, validDocList, identityBalanceHistory, decimals) {
 
+    if (documents == null) return;
+
     // write tx history
     let historyTx = [];         // list of documents.data
     let historyType = [];       // list of string - "deposit" or "withdraw" 
@@ -83,7 +85,6 @@ const fromUserRep = function(strNumber, decimals) {
     // assert.ok(typeof decimals === 'integer');
 
     if (strNumber == undefined) return undefined;
-
     let parts = strNumber.split(".");
 
     

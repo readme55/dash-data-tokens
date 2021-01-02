@@ -215,26 +215,29 @@ const getDocumentChain = async function (tokenContractId) {
         return;
     }
 
-    // Check token contract initialized and save token attributes
+    // validate token contract attributes
+    const contractJson = await client.platform.contracts.get(tokenContractId);
     if (documents.length == 0) {
         console.log("ERROR: Token Contract not Initialized! Contract Owner needs to mint initial supply")
-        return; // will jump to "finally section"
-    }
-
-    // validate contract owner minted initial supply
-    const contractJson = await client.platform.contracts.get(tokenContractId);
-    if (documents[0].ownerId.toString() != contractJson.ownerId.toString()) {
+        return;
+    } else if (documents[0].ownerId.toString() != contractJson.ownerId.toString()) {
         console.log("ERROR: Token Contract Broken! Someone different then the contract owner minted initial supply")
+        return;
     } else if (documents[0].data.sender != '1'.repeat(42)) {
         console.log("ERROR: Token Contract Broken! Token Sender is not zero address in Token Contract genesis document")
+        return;
     } else if (documents[0].data.name == undefined) {
         console.log("ERROR: Token Contract Broken! Token Name is undefined in Token Contract genesis document")
+        return;
     } else if (documents[0].data.symbol == undefined) {
         console.log("ERROR: Token Contract Broken! Token Symbol is undefined in Token Contract genesis document")
+        return;
     } else if (documents[0].data.decimals == undefined) {
         console.log("ERROR: Token Contract Broken! Token Decimal is undefined in Token Contract genesis document")
+        return;
     } else if (documents[0].data.amount == undefined || BigInt(documents[0].data.amount) == 0n ) {
         console.log("ERROR: Token Contract Broken! Token Amount is undefined or equals zero in Token Contract genesis document")
+        return;
     } else {
         tokenName = documents[0].data.name;
         tokenSymbol = documents[0].data.symbol
@@ -458,6 +461,7 @@ const processDocumentChain = async function (tokenContractId, identityId) {
 
     console.log("++++ Fetching all Documents:")
     documents = await getDocumentChain(tokenContractId);
+    if(documents == null) {return}
     console.log("++++ Fetched " + documents.length + " documents")
 
     console.log("++++ Processing valid Documents:")
