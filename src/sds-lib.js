@@ -2,6 +2,7 @@ let clientOpts = {};
 clientOpts.network = dashNetwork;
 clientOpts.wallet = {};
 clientOpts.wallet.mnemonic = dappMnemonic;
+clientOpts.wallet.adapter = localforage;
 
 const client = new Dash.Client(clientOpts);
 client.getApps().set("messageContract", { "contractId": messageContractId });

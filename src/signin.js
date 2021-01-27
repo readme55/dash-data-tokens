@@ -25,6 +25,7 @@ $(document).ready(function () {
         clientOpts.network = dashNetwork;
         clientOpts.wallet = {};
         clientOpts.wallet.mnemonic = dappMnemonic;
+        clientOpts.wallet.adapter = localforage;
 
         client = new Dash.Client(clientOpts);
         client.getApps().set("messageContract", { "contractId": messageContractId })
