@@ -9,6 +9,7 @@ let identityBalanceHistory = [];
 let indWithdrawals = [];
 let indDeposits = [];
 let validDocList = [];
+let processedIdentList = [];
 
 
 // NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for transferFrom ERC-20 Method.
@@ -252,15 +253,16 @@ const getDocumentChain = async function (tokenContractId) {
 
 const getValidDocumentChain = function (documents) {
 
+    validDocList = [];
+
     let docslen = documents.length;
 
     // init boolean array with true
-    let validDocList = [];
     for (let i = 0; i < docslen; i++) {
         validDocList.push(true);
     }
 
-    // TODO: could check for correct symbol, name, decimals also in each tx - currently all derived from genesis document
+    // NOTE: could check for correct symbol, name, decimals also in each tx - currently all derived from genesis document
 
     // validate all documents, skip genesis
     for (let i = 1; i < docslen; i++) {
@@ -295,55 +297,57 @@ const getValidDocumentChain = function (documents) {
         }
     }
 
-    let processedIdentList = [];
-
-    // Validate given balance in document tx with summed up balance from the genesis document until current document height
-    // for N transactions in the doc-chain and M users it iterates through M*N entries and writing N entries (no duplicates).
-    const recursiveBalanceValidation = function (identityId, userBalance) {
-
-        // process user balance and invalidate validDocs Array if found
-        console.log("Start processing document for identity " + identityId)
-        for (let i = 0; i < docslen; i++) {
-
-            let procIdentityId = documents[i].ownerId.toString();   // processing document owner id
-
-            // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment to see where optimisation potential
-            // if document is owned by own identity
-            if (procIdentityId == identityId) {    // if withdrawal or approval (TODO)
-                if (userBalance == BigInt(documents[i].data.balance)) {
-                    // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
-                } else {
-                    validDocList[i] = false;
-                    // console.log("index " + i + " Validate: FALSE (invalid balance)")
-                }
-
-                if (processedIdentList.indexOf(identityId) == -1) {
-                    processedIdentList.push(identityId);
-                }
-            // else document is from other identity
-            } else if (processedIdentList.indexOf(procIdentityId) == -1) {
-                recursiveBalanceValidation(procIdentityId, 0n);    // start processing for this identity before continuing (bc need to validate this one first)
-                processedIdentList.push(procIdentityId);
-            }
-
-            // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
-            // Sum up Balance after Withdrawal  - skip genesis document
-            if (documents[i].ownerId.toString() == identityId && validDocList[i] == true && i != 0) {
-                userBalance -= BigInt(documents[i].data.amount);
-                console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
-            }
-
-            // Sum up Balance after Deposit
-            if (documents[i].data.recipient == identityId && validDocList[i] == true) {
-                userBalance += BigInt(documents[i].data.amount);
-                console.log("index " + i + ": Deposit - Balance for " + identityId + " is " + userBalance)
-            }
-        }
-    }
+    processedIdentList = [];
     recursiveBalanceValidation(documents[0].ownerId.toString(), 0n);   // process all balance attributes and set (in-)validate isValidDoc
     console.log("finish recursion")
 
     return validDocList;
+}
+
+// Validate given balance in document tx with summed up balance from the genesis document until current document height
+// for N transactions in the doc-chain and M users it iterates through M*N entries and writing N entries (no duplicates).
+const recursiveBalanceValidation = function (identityId, userBalance) {
+
+    let docslen = documents.length;
+
+    // process user balance and invalidate validDocs Array if found
+    console.log("Start processing document for identity " + identityId)
+    for (let i = 0; i < docslen; i++) {
+
+        let procIdentityId = documents[i].ownerId.toString();   // processing document owner id
+
+        // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment to see where optimisation potential
+        // if document is owned by own identity
+        if (procIdentityId == identityId) {    // if withdrawal or approval (TODO)
+            if (userBalance == BigInt(documents[i].data.balance)) {
+                // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
+            } else {
+                validDocList[i] = false;
+                // console.log("index " + i + " Validate: FALSE (invalid balance)")
+            }
+
+            if (processedIdentList.indexOf(identityId) == -1) {
+                processedIdentList.push(identityId);
+            }
+        // else document is from other identity
+        } else if (processedIdentList.indexOf(procIdentityId) == -1) {
+            recursiveBalanceValidation(procIdentityId, 0n);    // start processing for this identity before continuing (bc need to validate this one first)
+            processedIdentList.push(procIdentityId);
+        }
+
+        // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
+        // Sum up Balance after Withdrawal  - skip genesis document
+        if (documents[i].ownerId.toString() == identityId && validDocList[i] == true && i != 0) {
+            userBalance -= BigInt(documents[i].data.amount);
+            console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
+        }
+
+        // Sum up Balance after Deposit
+        if (documents[i].data.recipient == identityId && validDocList[i] == true) {
+            userBalance += BigInt(documents[i].data.amount);
+            console.log("index " + i + ": Deposit - Balance for " + identityId + " is " + userBalance)
+        }
+    }
 }
 
 const balanceOf = function (identityId) {
@@ -370,6 +374,7 @@ const balanceOf = function (identityId) {
     }
     return userBalance;
 }
+
 
 // NOT USED YET - optimised approach for index processing.
 // Probably just remove all index processing since its not adding extra security (as planned)
