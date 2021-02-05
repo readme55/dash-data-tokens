@@ -4,13 +4,11 @@
 // client.getApps().set("tokenContractLoc", { "contractId": tokenContractId });  // may change dynamic, not needed as apps object since CW submits
 
 let documents = [];
-let identityBalance = 0n;
-let identityBalanceHistory = [];
+let userBalance = 0n;   // BigInt
+let userBalanceHistory = [];
 let indWithdrawals = [];
 let indDeposits = [];
 let validDocList = [];
-let processedIdentList = [];
-
 
 // NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for transferFrom ERC-20 Method.
 // Balance and ValidIndexes not needed for processing (could be removed), but kept for now (may be used for runtime optimisation)
@@ -158,15 +156,12 @@ const symbol = function () {
 const decimals = function () {
     return tokenDecimal;
 }
-const totalSupply = function() {
-    return tokenInitSupply;    // ignoring zero address and without further minting, TODO add logic to validate totalSupply on-chain
-}
 
 const initialSupply = function () {
     return tokenInitSupply;
 }
 const getUserBalance = function () {
-    return identityBalance;
+    return userBalance;
 }
 
 // TODO: check - added for token-ui-lib
@@ -177,7 +172,24 @@ const getValidDocList = function() {
     return validDocList;
 }
 const getIdentityBalanceHistory = function() {
-    return identityBalanceHistory;
+    return userBalanceHistory;
+}
+
+const totalSupply = function() {
+    // return tokenInitSupply;    // ignoring zero address and without further minting, TODO add logic to validate totalSupply on-chain
+
+    // let identitySize = processedIdentList.length;
+    let totalSupply = 0n;
+
+    // console.log("length: " + identitySize)
+    // for (let i = 0; i < identitySize; i++) {
+        // totalSupply += balanceOf(processedIdentList[i]);
+        // console.log("processing identity " + processedIdentList[i])
+        // console.log("user balance1 " + balanceOf(processedIdentList[i]))
+    // }
+
+    console.log(totalSupply)
+    return totalSupply;
 }
 
 
@@ -297,16 +309,19 @@ const getValidDocumentChain = function (documents) {
         }
     }
 
-    processedIdentList = [];
-    recursiveBalanceValidation(documents[0].ownerId.toString(), 0n);   // process all balance attributes and set (in-)validate isValidDoc
+    let processedIdentList = [];    // add to recursion method argument, leads to different instances (optimize with "replace recursion TODO")
+    recursiveBalanceValidation(documents[0].ownerId.toString(), 0n, processedIdentList);   // process all balance attributes and set (in-)validate isValidDoc
     console.log("finish recursion")
 
     return validDocList;
 }
 
+
+// TODO: replace recursion algorithm, it does duplicate processing and thus writes duplicates into processedIdentList
+
 // Validate given balance in document tx with summed up balance from the genesis document until current document height
 // for N transactions in the doc-chain and M users it iterates through M*N entries and writing N entries (no duplicates).
-const recursiveBalanceValidation = function (identityId, userBalance) {
+const recursiveBalanceValidation = function (identityId, userBalance, processedIdentList) {
 
     let docslen = documents.length;
 
@@ -318,7 +333,7 @@ const recursiveBalanceValidation = function (identityId, userBalance) {
 
         // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment to see where optimisation potential
         // if document is owned by own identity
-        if (procIdentityId == identityId) {    // if withdrawal or approval (TODO)
+        if (procIdentityId == identityId) {    // if withdrawal (or TODO approval)
             if (userBalance == BigInt(documents[i].data.balance)) {
                 // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
             } else {
@@ -327,11 +342,19 @@ const recursiveBalanceValidation = function (identityId, userBalance) {
             }
 
             if (processedIdentList.indexOf(identityId) == -1) {
+                // console.log("-------------- 1 PUSH IDENTITY " + identityId)  // TODO: use for debug, then cleanup
+                // console.log("size: " + processedIdentList.length)
+                // console.log(processedIdentList.indexOf(identityId))
+                // console.dir(processedIdentList)
                 processedIdentList.push(identityId);
             }
         // else document is from other identity
         } else if (processedIdentList.indexOf(procIdentityId) == -1) {
-            recursiveBalanceValidation(procIdentityId, 0n);    // start processing for this identity before continuing (bc need to validate this one first)
+            // console.log("-------------- 2 PUSH IDENTITY " + procIdentityId)  // TODO: use for debug, then cleanup
+            // console.log("size: " + processedIdentList.length)
+            // console.log(processedIdentList.indexOf(procIdentityId))
+            // console.dir(processedIdentList)
+            recursiveBalanceValidation(procIdentityId, 0n, processedIdentList);    // start processing for this identity before continuing (bc need to validate this one first)
             processedIdentList.push(procIdentityId);
         }
 
@@ -353,21 +376,21 @@ const recursiveBalanceValidation = function (identityId, userBalance) {
 const balanceOf = function (identityId) {
 
     let userBalance = 0n;   // BigInt
-    identityBalanceHistory = [];    // BigInt list
+    userBalanceHistory = [];    // BigInt list
     let docslen = documents.length;
     for (let i = 0; i < docslen; i++) {
 
         // withdrawal - skip genesis document
         if (documents[i].ownerId.toString() == identityId && validDocList[i] == true && i != 0) {
             userBalance += -(BigInt(documents[i].data.amount));
-            identityBalanceHistory[i] = userBalance;
+            userBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Withdrawal " + userBalance)
         }
 
         // deposit
         if (documents[i].data.recipient == identityId && validDocList[i] == true) {
             userBalance += BigInt(documents[i].data.amount);
-            identityBalanceHistory[i] = userBalance;
+            userBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Deposit " + userBalance)
         }
 
@@ -474,8 +497,8 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     console.log("++++ Valid document amount is " + validDocList.filter(x => x==true).length );    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)
-    identityBalance = balanceOf(identityId);
-    console.log("++++ Account Balance is " + identityBalance)
+    userBalance = balanceOf(identityId);
+    console.log("++++ Account Balance is " + userBalance)
 
     console.log("++++ Processing withdraw/deposit indexes")
     indWithdrawals = [];
