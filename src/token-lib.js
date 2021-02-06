@@ -1,6 +1,4 @@
 "use strict"
-// const assert = require('assert').strict;
-// const assert = require('assert');
 
 // client.getApps().set("tokenContractLoc", { "contractId": tokenContractId });  // may change dynamic, not needed as apps object since CW submits
 
@@ -9,14 +7,14 @@ let accBalance = 0n;   // BigInt
 let accBalanceHistory = [];
 let mapDocuments = [];    // boolean list mapping
 
-let indWithdrawals = [];    // optional used
-let indDeposits = [];       // optional used
+// written but not used for validation (option for runtime optimization and security enhancement)
+let mapWithdraw = [];
+let mapDeposit = [];
 
-// NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for transferFrom ERC-20 method
-// balance property required in this implementation, but could be removed 
-// Indexes for withdraw and deposit only written not used (option for runtime optimisation)
+// NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for "transferFrom" ERC-20 method
+// balance property required in this implementation, but could be removed (runtime vs. security)
 
-// type string for amount and balance with 78 decimals like uint256 has
+// amount and balance with 78 decimals analogous to uint256
 const dataContractJson = {
     token: {
         indices: [
@@ -168,7 +166,6 @@ const getAccBalance = function () {
     return accBalance;
 }
 
-// TODO: check - added for token-ui-lib
 const getDocuments = function() {
     return documents;
 }
@@ -273,7 +270,7 @@ const getDocumentChain = async function (tokenContractId) {
     return documents;
 }
 
-const getValidDocumentChain = function (documents) {
+const getDocumentChainMap = function (documents) {
 
     mapDocuments = [];
 
@@ -320,8 +317,8 @@ const getValidDocumentChain = function (documents) {
     }
 
     let processedIdentList = [];    // add to recursion method argument, leads to different instances (optimize with "replace recursion TODO")
-    recursiveBalanceValidation(documents[0].ownerId.toString(), 0n, processedIdentList);   // process all balance attributes and set (in-)validate isValidDoc
-    console.log("finish recursion")
+    balanceValidation(documents[0].ownerId.toString(), 0n, processedIdentList);   // process all balance attributes and set (in-)validate isValidDoc
+    console.log("Finish balance validation")
 
     return mapDocuments;
 }
@@ -331,7 +328,7 @@ const getValidDocumentChain = function (documents) {
 // for N transactions in the doc-chain and M users it iterates through max M*N entries and writing N entries (no duplicates).
 // NOTE: only processes accounts that are connected with the given identity-account, so processedIdentList does not contain all accounts on the chain
 // TODO: compare with bottom-up approach, add algorithm to validate all tx starting at genesis
-const recursiveBalanceValidation = function (identityId, userBalance, processedIdentList) {
+const balanceValidation = function (identityId, userBalance, processedIdentList) {
 
     let lenDocs = documents.length;
 
@@ -364,7 +361,7 @@ const recursiveBalanceValidation = function (identityId, userBalance, processedI
             // console.log("size: " + processedIdentList.length)
             // console.log(processedIdentList.indexOf(procIdentityId))
             // console.dir(processedIdentList)
-            recursiveBalanceValidation(procIdentityId, 0n, processedIdentList);    // start processing for this identity before continuing (bc need to validate this one first)
+            balanceValidation(procIdentityId, 0n, processedIdentList);    // start processing for this identity before continuing (bc need to validate this one first)
             processedIdentList.push(procIdentityId);
         }
 
@@ -409,9 +406,8 @@ const balanceOf = function (identityId) {
 }
 
 
-// NOT USED YET - optimised approach for index processing.
-// Probably just remove all index processing since its not adding extra security (as planned)
-const processIndexesOptimized = function (identityId) {
+// Not used atm - optimised approach for index processing.
+const processIndexOpt = function (identityId) {
 
     let lenDocs = documents.length;
 
@@ -420,30 +416,30 @@ const processIndexesOptimized = function (identityId) {
 
         if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true) {
             console.log("index " + i + ": Found last withdrawal from this identityId")
-            indWithdrawals.push(i);
+            mapWithdraw.push(i);
             // break;   // dont break, calc all withdrawals for transfer history
         }
     }
 
     // search last deposits to this identityId 
-    for (let i = lenDocs - 1; i > indWithdrawals[0]; i--) {  // process only since last withdraw (optimization)
+    for (let i = lenDocs - 1; i > mapWithdraw[0]; i--) {  // process only since last withdraw (optimization)
         console.log(i)
         console.log(documents[i].data.recipient)
         if (documents[i].data.recipient == identityId && mapDocuments[i] == true) {
-            indDeposits.push(i);
+            mapDeposit.push(i);
             console.log("index " + i + ": Found last valid deposit since last withdraw for this identityId")
         }
         // last withdrawal reached, set lastDeposit value from prev document (optimization)
-        if (i == indWithdrawals[0]) {
-            indDeposits.push(documents[i].data.lastValIndTransferFrom);
+        if (i == mapWithdraw[0]) {
+            mapDeposit.push(documents[i].data.lastValIndTransferFrom);
             console.log("Adding last valid deposit value from last withdraw document " + documents[i].data.lastValIndTransferFrom)
         };
     }
 
-    // TODO: check, probably redundant and no idea what i was planning here!? only valid document indexes are pushed to indWithdrawals
+    // TODO: check, probably redundant - only valid document indexes are pushed to mapWithdraw
     // perhaps got to do with the optimisation algo ... but only withdrawals are checked -> doesnt make sense atm
     // search through indexes for invalid docTX
-    // let curLastDocTX = indWithdrawals[0];
+    // let curLastDocTX = mapWithdraw[0];
     // console.log(curLastDocTX)
     // for (let i = lenDocs - 1; i >= 0; i--) {
     //     if (i == curLastDocTX) {
@@ -462,7 +458,7 @@ const processIndexesOptimized = function (identityId) {
 
 // Probably just remove all index processing since its not adding extra security (as planned)
 // not used for validation, could be removed (keep until sure)
-const processAllIndexes = function (identityId) {
+const processIndex = function (identityId) {
 
     let lenDocs = documents.length;
 
@@ -471,7 +467,7 @@ const processAllIndexes = function (identityId) {
 
         if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true) {
             console.log("index " + i + ": Found last valid withdrawal from this identityId")
-            indWithdrawals.push(i);
+            mapWithdraw.push(i);
         }
     }
 
@@ -479,7 +475,7 @@ const processAllIndexes = function (identityId) {
     for (let i = lenDocs - 1; i >= 0; i--) { // process all deposits (including genesis document)
 
         if (documents[i].data.recipient == identityId && mapDocuments[i] == true) {
-            indDeposits.push(i);
+            mapDeposit.push(i);
             console.log("index " + i + ": Found last valid deposit for this identityId");
         }
     }
@@ -503,7 +499,7 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     console.log("++++ Fetched " + documents.length + " documents")
 
     console.log("++++ Processing valid Documents:")
-    mapDocuments = getValidDocumentChain(documents);
+    mapDocuments = getDocumentChainMap(documents);
     console.log("++++ Valid document amount is " + mapDocuments.filter(x => x==true).length );    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)
@@ -511,8 +507,8 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     console.log("++++ Account Balance is " + accBalance)
 
     console.log("++++ Processing withdraw/deposit indexes")
-    indWithdrawals = [];
-    indDeposits = [];
-    processAllIndexes(identityId);
+    mapWithdraw = [];
+    mapDeposit = [];
+    processIndex(identityId);
 
 }
