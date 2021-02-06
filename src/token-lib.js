@@ -1,3 +1,4 @@
+"use strict"
 // const assert = require('assert').strict;
 // const assert = require('assert');
 
@@ -6,7 +7,7 @@
 let documents = [];
 let accBalance = 0n;   // BigInt
 let accBalanceHistory = [];
-let validDocuments = [];    // boolean list mapping
+let mapDocuments = [];    // boolean list mapping
 
 let indWithdrawals = [];    // optional used
 let indDeposits = [];       // optional used
@@ -163,7 +164,7 @@ const decimals = function () {
 const initialSupply = function () {
     return tokenInitSupply;
 }
-const getUserBalance = function () {
+const getAccBalance = function () {
     return accBalance;
 }
 
@@ -171,10 +172,10 @@ const getUserBalance = function () {
 const getDocuments = function() {
     return documents;
 }
-const getValidDocList = function() {
-    return validDocuments;
+const getMapDocuments = function() {
+    return mapDocuments;
 }
-const getIdentityBalanceHistory = function() {
+const getAccBalanceHistory = function() {
     return accBalanceHistory;
 }
 
@@ -186,9 +187,12 @@ const totalSupply = function() {
 
     // let identitySize = processedIdentList.length;
     let totalSupply = 0n;
+    let accounts = [];
+    let lenDocs = documents.length;
 
-    // console.log("length: " + identitySize)
-    // for (let i = 0; i < identitySize; i++) {
+    for (let i = 0; i < lenDocs; i++) {
+        
+    }
         // totalSupply += balanceOf(processedIdentList[i]);
         // console.log("processing identity " + processedIdentList[i])
         // console.log("user balance1 " + balanceOf(processedIdentList[i]))
@@ -271,19 +275,19 @@ const getDocumentChain = async function (tokenContractId) {
 
 const getValidDocumentChain = function (documents) {
 
-    validDocuments = [];
+    mapDocuments = [];
 
-    let docslen = documents.length;
+    let lenDocs = documents.length;
 
     // init boolean array with true
-    for (let i = 0; i < docslen; i++) {
-        validDocuments.push(true);
+    for (let i = 0; i < lenDocs; i++) {
+        mapDocuments.push(true);
     }
 
     // NOTE: could check for correct symbol, name, decimals also in each tx - currently all derived from genesis document
 
     // validate all documents, skip genesis
-    for (let i = 1; i < docslen; i++) {
+    for (let i = 1; i < lenDocs; i++) {
 
         // json-schema pattern for amount denies negative, empty and non-numeric amount!
         // validate amount >= zero (allow 0-value transfer)
@@ -291,7 +295,7 @@ const getValidDocumentChain = function (documents) {
             // console.log("Validate: amount >= 0 " + i)
         } else {
             console.log("Validate: FALSE (amount >= 0) at index " + i); 
-            validDocuments[i] = false;
+            mapDocuments[i] = false;
             continue;
         }
 
@@ -300,7 +304,7 @@ const getValidDocumentChain = function (documents) {
             // console.log("Validate: balance >= amount " + i)
         } else {
             console.log("Validate: FALSE (balance >= amount) at index " + i)
-            validDocuments[i] = false;
+            mapDocuments[i] = false;
             continue;
         }
 
@@ -310,7 +314,7 @@ const getValidDocumentChain = function (documents) {
             console.log("Syntax Validation successful: document " + i)
         } else {
             console.log("Validate: FALSE sender == document ownerId " + i)
-            validDocuments[i] = false;
+            mapDocuments[i] = false;
             continue;
         }
     }
@@ -319,7 +323,7 @@ const getValidDocumentChain = function (documents) {
     recursiveBalanceValidation(documents[0].ownerId.toString(), 0n, processedIdentList);   // process all balance attributes and set (in-)validate isValidDoc
     console.log("finish recursion")
 
-    return validDocuments;
+    return mapDocuments;
 }
 
 
@@ -329,11 +333,11 @@ const getValidDocumentChain = function (documents) {
 // TODO: compare with bottom-up approach, add algorithm to validate all tx starting at genesis
 const recursiveBalanceValidation = function (identityId, userBalance, processedIdentList) {
 
-    let docslen = documents.length;
+    let lenDocs = documents.length;
 
     // process user balance and invalidate validDocs Array if found
     console.log("Start processing document for identity " + identityId)
-    for (let i = 0; i < docslen; i++) {
+    for (let i = 0; i < lenDocs; i++) {
 
         let procIdentityId = documents[i].ownerId.toString();   // processing document owner id
 
@@ -343,7 +347,7 @@ const recursiveBalanceValidation = function (identityId, userBalance, processedI
             if (userBalance == BigInt(documents[i].data.balance)) {
                 // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
             } else {
-                validDocuments[i] = false;
+                mapDocuments[i] = false;
                 // console.log("index " + i + " Validate: FALSE (invalid balance)")
             }
 
@@ -366,13 +370,13 @@ const recursiveBalanceValidation = function (identityId, userBalance, processedI
 
         // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
         // Sum up Balance after Withdrawal  - skip genesis document
-        if (documents[i].ownerId.toString() == identityId && validDocuments[i] == true && i != 0) {
+        if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true && i != 0) {
             userBalance -= BigInt(documents[i].data.amount);
             console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
         }
 
         // Sum up Balance after Deposit
-        if (documents[i].data.recipient == identityId && validDocuments[i] == true) {
+        if (documents[i].data.recipient == identityId && mapDocuments[i] == true) {
             userBalance += BigInt(documents[i].data.amount);
             console.log("index " + i + ": Deposit - Balance for " + identityId + " is " + userBalance)
         }
@@ -383,18 +387,18 @@ const balanceOf = function (identityId) {
 
     let userBalance = 0n;   // BigInt
     accBalanceHistory = [];    // BigInt list
-    let docslen = documents.length;
-    for (let i = 0; i < docslen; i++) {
+    let lenDocs = documents.length;
+    for (let i = 0; i < lenDocs; i++) {
 
         // withdrawal - skip genesis document
-        if (documents[i].ownerId.toString() == identityId && validDocuments[i] == true && i != 0) {
+        if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true && i != 0) {
             userBalance += -(BigInt(documents[i].data.amount));
             accBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Withdrawal " + userBalance)
         }
 
         // deposit
-        if (documents[i].data.recipient == identityId && validDocuments[i] == true) {
+        if (documents[i].data.recipient == identityId && mapDocuments[i] == true) {
             userBalance += BigInt(documents[i].data.amount);
             accBalanceHistory[i] = userBalance;
             console.log("index " + i + ": Balance after Deposit " + userBalance)
@@ -409,12 +413,12 @@ const balanceOf = function (identityId) {
 // Probably just remove all index processing since its not adding extra security (as planned)
 const processIndexesOptimized = function (identityId) {
 
-    let docslen = documents.length;
+    let lenDocs = documents.length;
 
     // search last withdraw from identityId
-    for (let i = docslen - 1; i >= 0; i--) {
+    for (let i = lenDocs - 1; i >= 0; i--) {
 
-        if (documents[i].ownerId.toString() == identityId && validDocuments[i] == true) {
+        if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true) {
             console.log("index " + i + ": Found last withdrawal from this identityId")
             indWithdrawals.push(i);
             // break;   // dont break, calc all withdrawals for transfer history
@@ -422,10 +426,10 @@ const processIndexesOptimized = function (identityId) {
     }
 
     // search last deposits to this identityId 
-    for (let i = docslen - 1; i > indWithdrawals[0]; i--) {  // process only since last withdraw (optimization)
+    for (let i = lenDocs - 1; i > indWithdrawals[0]; i--) {  // process only since last withdraw (optimization)
         console.log(i)
         console.log(documents[i].data.recipient)
-        if (documents[i].data.recipient == identityId && validDocuments[i] == true) {
+        if (documents[i].data.recipient == identityId && mapDocuments[i] == true) {
             indDeposits.push(i);
             console.log("index " + i + ": Found last valid deposit since last withdraw for this identityId")
         }
@@ -441,7 +445,7 @@ const processIndexesOptimized = function (identityId) {
     // search through indexes for invalid docTX
     // let curLastDocTX = indWithdrawals[0];
     // console.log(curLastDocTX)
-    // for (let i = docslen - 1; i >= 0; i--) {
+    // for (let i = lenDocs - 1; i >= 0; i--) {
     //     if (i == curLastDocTX) {
     //         if (!isValidDoc[i]) {
     //             console.log("invalid docTX found at index " + i)
@@ -460,21 +464,21 @@ const processIndexesOptimized = function (identityId) {
 // not used for validation, could be removed (keep until sure)
 const processAllIndexes = function (identityId) {
 
-    let docslen = documents.length;
+    let lenDocs = documents.length;
 
     // search last withdraw from identityId
-    for (let i = docslen - 1; i >= 1; i--) {    // skip genesis document
+    for (let i = lenDocs - 1; i >= 1; i--) {    // skip genesis document
 
-        if (documents[i].ownerId.toString() == identityId && validDocuments[i] == true) {
+        if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true) {
             console.log("index " + i + ": Found last valid withdrawal from this identityId")
             indWithdrawals.push(i);
         }
     }
 
     // search last deposits to this identityId 
-    for (let i = docslen - 1; i >= 0; i--) { // process all deposits (including genesis document)
+    for (let i = lenDocs - 1; i >= 0; i--) { // process all deposits (including genesis document)
 
-        if (documents[i].data.recipient == identityId && validDocuments[i] == true) {
+        if (documents[i].data.recipient == identityId && mapDocuments[i] == true) {
             indDeposits.push(i);
             console.log("index " + i + ": Found last valid deposit for this identityId");
         }
@@ -499,8 +503,8 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     console.log("++++ Fetched " + documents.length + " documents")
 
     console.log("++++ Processing valid Documents:")
-    validDocuments = getValidDocumentChain(documents);
-    console.log("++++ Valid document amount is " + validDocuments.filter(x => x==true).length );    // TODO: comment for production
+    mapDocuments = getValidDocumentChain(documents);
+    console.log("++++ Valid document amount is " + mapDocuments.filter(x => x==true).length );    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)
     accBalance = balanceOf(identityId);

@@ -1,4 +1,6 @@
-const getTxHistory = async function (identityId, documents, validDocList, identityBalanceHistory, decimals) {
+"use strict"
+
+const getTxHistory = async function (identityId, documents, mapDocuments, accBalanceHistory, decimals) {
 
     if (documents == null) return;
 
@@ -25,8 +27,8 @@ const getTxHistory = async function (identityId, documents, validDocList, identi
         if (documents[i].data.sender == identityId) {
             historyTx.push(documents[i].data);
             historyType.push("Withdraw");
-            historyBalance.push( toUserRep(identityBalanceHistory[i], decimals) );
-            if (validDocList[i]) {
+            historyBalance.push( toUserRep(accBalanceHistory[i], decimals) );
+            if (mapDocuments[i]) {
                 historyValid.push(true);
             } else {
                 historyValid.push(false);
@@ -36,8 +38,8 @@ const getTxHistory = async function (identityId, documents, validDocList, identi
         if (documents[i].data.recipient == identityId) {
             historyTx.push(documents[i].data);
             historyType.push("Deposit");
-            historyBalance.push( toUserRep(identityBalanceHistory[i], decimals) );
-            if (validDocList[i]) {
+            historyBalance.push( toUserRep(accBalanceHistory[i], decimals) );
+            if (mapDocuments[i]) {
                 historyValid.push(true);
             } else {
                 historyValid.push(false);
