@@ -189,22 +189,18 @@ const totalSupply = function () {
 
         if (accounts.indexOf(sender) == -1) {
             accounts.push(sender);
-            console.log(sender)
         }
         if (accounts.indexOf(recipient) == -1) {
             accounts.push(recipient);
-            console.log(recipient)
         }
     }
 
     // fetch balance for each identity and sum up
     for (let i = 0; i < accounts.length; i++) {
         totalSupply += balanceOf(accounts[i]);
-        console.log("processing identity " + accounts[i])
-        console.log("user balance1 " + balanceOf(accounts[i]))
     }
 
-    console.log(totalSupply)
+    console.log("Total Supply: " + totalSupply);
     return totalSupply;
 }
 

@@ -32,6 +32,8 @@ $(document).ready(function () {
             $("#initBtn").prop('disabled', true);
             $("#receiveBtn").prop('disabled', true);
             $("#sendBtn").prop('disabled', true);
+            $("#searchBtn").prop('disabled', true);
+            $("#totalSupplyBtn").prop('disabled', true);
             // $("#formTokenName").prop('readonly', false);
             // $("#formTokenSymbol").prop('readonly', false);
             // $("#formTokenAmount").prop('readonly', false);
@@ -41,6 +43,7 @@ $(document).ready(function () {
             $("#initBtn").prop('disabled', false);
             $("#receiveBtn").prop('disabled', false);
             $("#sendBtn").prop('disabled', true);
+            $("#totalSupplyBtn").prop('disabled', true);
             // $("#formTokenName").prop('readonly', true);
             // $("#formTokenSymbol").prop('readonly', true);
             // $("#formTokenAmount").prop('readonly', true);
@@ -119,21 +122,22 @@ $(document).ready(function () {
         $("#formTokenAmount").val( toUserRep(initialSupply(), decimals()) );
         $("#formBalance").val( toUserRep(getAccBalance(), decimals()) );
 
-        document.getElementById("formAppendTokenSymbol").innerHTML = symbol();
+        // TODO: move to "load contract" button
+        document.getElementById("formAppendTokenSymbol1").innerHTML = symbol();
         document.getElementById("formAppendTokenSymbol2").innerHTML = symbol();
+        document.getElementById("formAppendTokenSymbol3").innerHTML = symbol();
 
         document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + toUserRep(getAccBalance(), decimals()) + " " + symbol() + ")";
 
         $("#receiveBtn").prop('disabled', false);
 
         $("#sendBtn").prop('disabled', false);  // activate sendBtn when validated successfully
+        $("#totalSupplyBtn").prop('disabled', false);   // activate totalSupplyBtn when chain processed once
 
         let historyOutput = await getTxHistory(identityId, getDocuments(), getMapDocuments(), getAccBalanceHistory(), decimals());
         $("#formHistoryOutput").val(historyOutput)
 
         console.log("done")
-
-        totalSupply();
 
     });
 
@@ -203,5 +207,16 @@ $(document).ready(function () {
         console.log("done")
 
     });
+
+
+    $("#totalSupplyBtn").click(async function () {
+        $("#totalSupplyBtn").prop('disabled', true);
+
+        // const tokenContractId = $("#formTokenContract").val().trim();
+
+        $("#formTotalSupply").val( toUserRep(totalSupply(), decimals()) )
+        $("#totalSupplyBtn").prop('disabled', false);
+    });
+
 
 });
