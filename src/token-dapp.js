@@ -8,12 +8,13 @@
 $(document).ready(function () {
 
     let username = sessionStorage.getItem('dash_username');
+    // let username = "readme"; // static for testing
     if (username != null) {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
-        $("#signinbutton").val(username)
+        $("#signinbutton").val(username);
     }
     let identityId = sessionStorage.getItem('dash_identityID');
-    // let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // readme static for testing
+    // let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // static for testing
 
      $("#formTokenContract").val("DY6KmhAsLqrkTxJWA7KAJA3vR4wHhExHqSYXLWitdxuu");    // Token Contract static for testing, comment to disable
 
@@ -116,21 +117,23 @@ $(document).ready(function () {
 
         // token amount and balance - divide by decimals to get user representation
         $("#formTokenAmount").val( toUserRep(initialSupply(), decimals()) );
-        $("#formBalance").val( toUserRep(getUserBalance(), decimals()) );
+        $("#formBalance").val( toUserRep(getAccBalance(), decimals()) );
 
         document.getElementById("formAppendTokenSymbol").innerHTML = symbol();
         document.getElementById("formAppendTokenSymbol2").innerHTML = symbol();
 
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + toUserRep(getUserBalance(), decimals()) + " " + symbol() + ")";
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + toUserRep(getAccBalance(), decimals()) + " " + symbol() + ")";
 
         $("#receiveBtn").prop('disabled', false);
 
         $("#sendBtn").prop('disabled', false);  // activate sendBtn when validated successfully
 
-        let historyOutput = await getTxHistory(identityId, getDocuments(), getValidDocList(), getIdentityBalanceHistory(), decimals());
+        let historyOutput = await getTxHistory(identityId, getDocuments(), getMapDocuments(), getAccBalanceHistory(), decimals());
         $("#formHistoryOutput").val(historyOutput)
 
         console.log("done")
+
+        totalSupply();
 
     });
 
@@ -165,8 +168,8 @@ $(document).ready(function () {
             data: tokenData,
             owner: tokenOwner,
             balance: tokenBalance,
-            lastValIndTransfer: indWithdrawals[0],
-            lastValIndTransferFrom: indDeposits[0]
+            lastValIndTransfer: mapWithdraw[0],
+            lastValIndTransferFrom: mapDeposit[0]
         }
         
         await sendTokenDocument('Token Dapp', username, tokenContractId, contractTxJson);
@@ -191,9 +194,9 @@ $(document).ready(function () {
         $("#formTokenSymbol").val(symbol())
         $("#formTokenAmount").val( toUserRep(initialSupply(), decimals()) )
         $("#formTokenDecimals").val(decimals())
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + toUserRep(getUserBalance(), decimals()) + " " + symbol() + ")";
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + toUserRep(getAccBalance(), decimals()) + " " + symbol() + ")";
 
-        let historyOutput = await getTxHistory(exploreIdentity, getDocuments(), getValidDocList(), getIdentityBalanceHistory(), decimals());
+        let historyOutput = await getTxHistory(exploreIdentity, getDocuments(), getMapDocuments(), getAccBalanceHistory(), decimals());
         $("#formHistoryOutput").val(historyOutput)
 
         $("#searchBtn").prop('disabled', false);

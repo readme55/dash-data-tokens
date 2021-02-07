@@ -1,20 +1,18 @@
 "use strict"
 
-// client.getApps().set("tokenContractLoc", { "contractId": tokenContractId });  // may change dynamic, not needed as apps object since CW submits
-
 let documents = [];
 let accBalance = 0n;   // BigInt
 let accBalanceHistory = [];
 let mapDocuments = [];    // boolean list mapping
 
-// written but not used for validation (option for runtime optimization and security enhancement)
+// processed and saved but not used for validation (optional runtime optimization and security enhancement)
 let mapWithdraw = [];
 let mapDeposit = [];
 
 // NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for "transferFrom" ERC-20 method
 // balance property required in this implementation, but could be removed (runtime vs. security)
-
 // amount and balance with 78 decimals analogous to uint256
+
 const dataContractJson = {
     token: {
         indices: [
@@ -166,34 +164,45 @@ const getAccBalance = function () {
     return accBalance;
 }
 
-const getDocuments = function() {
+const getDocuments = function () {
     return documents;
 }
-const getMapDocuments = function() {
+const getMapDocuments = function () {
     return mapDocuments;
 }
-const getAccBalanceHistory = function() {
+const getAccBalanceHistory = function () {
     return accBalanceHistory;
 }
 
-const totalSupply = function() {
-    // return tokenInitSupply;    // ignoring zero address and without further minting, TODO add logic to validate totalSupply on-chain
+const totalSupply = function () {
+
+    console.log("Start processing Total Supply for Data Token Contract")
 
     // fetch all identities on the chain
-    // fetch balance for each identity and sum up
-
-    // let identitySize = processedIdentList.length;
-    let totalSupply = 0n;
     let accounts = [];
+    let totalSupply = 0n;
     let lenDocs = documents.length;
-
     for (let i = 0; i < lenDocs; i++) {
-        
+
+        let sender = documents[i].data.sender;
+        let recipient = documents[i].data.recipient;
+
+        if (accounts.indexOf(sender) == -1) {
+            accounts.push(sender);
+            console.log(sender)
+        }
+        if (accounts.indexOf(recipient) == -1) {
+            accounts.push(recipient);
+            console.log(recipient)
+        }
     }
-        // totalSupply += balanceOf(processedIdentList[i]);
-        // console.log("processing identity " + processedIdentList[i])
-        // console.log("user balance1 " + balanceOf(processedIdentList[i]))
-    // }
+
+    // fetch balance for each identity and sum up
+    for (let i = 0; i < accounts.length; i++) {
+        totalSupply += balanceOf(accounts[i]);
+        console.log("processing identity " + accounts[i])
+        console.log("user balance1 " + balanceOf(accounts[i]))
+    }
 
     console.log(totalSupply)
     return totalSupply;
@@ -212,7 +221,7 @@ const totalSupply = function() {
 
 const getDocumentChain = async function (tokenContractId) {
 
-    client.getApps().set("tokenContractLoc", { "contractId": tokenContractId });
+    client.getApps().set("tokenContract", { "contractId": tokenContractId });
     documents = [];
 
     try {
@@ -223,7 +232,7 @@ const getDocumentChain = async function (tokenContractId) {
         let len = 100;
         while (len == 100) {
             let queryBasic = { startAt: nStart };
-            let tmpDocuments = await client.platform.documents.get('tokenContractLoc.token', queryBasic);
+            let tmpDocuments = await client.platform.documents.get('tokenContract.token', queryBasic);
             len = tmpDocuments.length;
             nStart += len;
             Array.prototype.push.apply(documents, tmpDocuments)
@@ -255,7 +264,7 @@ const getDocumentChain = async function (tokenContractId) {
     } else if (documents[0].data.decimals == undefined) {
         console.log("ERROR: Token Contract Broken! Token Decimal is undefined in Token Contract genesis document")
         return;
-    } else if (documents[0].data.amount == undefined || BigInt(documents[0].data.amount) == 0n ) {
+    } else if (documents[0].data.amount == undefined || BigInt(documents[0].data.amount) == 0n) {
         console.log("ERROR: Token Contract Broken! Token Amount is undefined or equals zero in Token Contract genesis document")
         return;
     } else {
@@ -291,7 +300,7 @@ const getDocumentChainMap = function (documents) {
         if (BigInt(documents[i].data.amount) >= 0n) {
             // console.log("Validate: amount >= 0 " + i)
         } else {
-            console.log("Validate: FALSE (amount >= 0) at index " + i); 
+            console.log("Validate: FALSE (amount >= 0) at index " + i);
             mapDocuments[i] = false;
             continue;
         }
@@ -316,30 +325,28 @@ const getDocumentChainMap = function (documents) {
         }
     }
 
-    let processedIdentList = [];    // add to recursion method argument, leads to different instances (optimize with "replace recursion TODO")
-    balanceValidation(documents[0].ownerId.toString(), 0n, processedIdentList);   // process all balance attributes and set (in-)validate isValidDoc
+    // process documents balance property, starting from genesis. (in-)validate mapDocuments
+    let procAccounts = [];
+    balanceValidation(documents[0].ownerId.toString(), 0n, procAccounts);
     console.log("Finish balance validation")
 
     return mapDocuments;
 }
 
 
-// Validate given balance in (top) document tx with summed up balance from the genesis document until current document height (top-down approach)
-// for N transactions in the doc-chain and M users it iterates through max M*N entries and writing N entries (no duplicates).
-// NOTE: only processes accounts that are connected with the given identity-account, so processedIdentList does not contain all accounts on the chain
-// TODO: compare with bottom-up approach, add algorithm to validate all tx starting at genesis
-const balanceValidation = function (identityId, userBalance, processedIdentList) {
+// recursion method. process accounts that are connected (deposit/withdraw) with the given identity-account.
+const balanceValidation = function (identityId, userBalance, procAccounts) {
 
     let lenDocs = documents.length;
 
-    // process user balance and invalidate validDocs Array if found
+    // process user balance and (in)validate
     console.log("Start processing document for identity " + identityId)
     for (let i = 0; i < lenDocs; i++) {
 
-        let procIdentityId = documents[i].ownerId.toString();   // processing document owner id
+        let procIdentityId = documents[i].ownerId.toString();
 
-        // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment to see where optimisation potential
-        // if document is owned by own identity
+        // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment for debug (opt potential)
+        // if document is owned by user identity
         if (procIdentityId == identityId) {    // if withdrawal (or TODO approval)
             if (userBalance == BigInt(documents[i].data.balance)) {
                 // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
@@ -348,25 +355,17 @@ const balanceValidation = function (identityId, userBalance, processedIdentList)
                 // console.log("index " + i + " Validate: FALSE (invalid balance)")
             }
 
-            if (processedIdentList.indexOf(identityId) == -1) {
-                // console.log("-------------- 1 PUSH IDENTITY " + identityId)  // TODO: use for debug, then cleanup
-                // console.log("size: " + processedIdentList.length)
-                // console.log(processedIdentList.indexOf(identityId))
-                // console.dir(processedIdentList)
-                processedIdentList.push(identityId);
+            if (procAccounts.indexOf(identityId) == -1) {
+                procAccounts.push(identityId);
             }
-        // else document is from other identity
-        } else if (processedIdentList.indexOf(procIdentityId) == -1) {
-            // console.log("-------------- 2 PUSH IDENTITY " + procIdentityId)  // TODO: use for debug, then cleanup
-            // console.log("size: " + processedIdentList.length)
-            // console.log(processedIdentList.indexOf(procIdentityId))
-            // console.dir(processedIdentList)
-            balanceValidation(procIdentityId, 0n, processedIdentList);    // start processing for this identity before continuing (bc need to validate this one first)
-            processedIdentList.push(procIdentityId);
+            // else document is from other identity
+        } else if (procAccounts.indexOf(procIdentityId) == -1) {
+            balanceValidation(procIdentityId, 0n, procAccounts);    // start processing for this identity before continuing (bc need to validate this one first)
+            procAccounts.push(procIdentityId);
         }
 
-        // Could sum up withdrawal above, but for deposit need to run recusiveBalanceValidation for sender first to (in-)validate documents
-        // Sum up Balance after Withdrawal  - skip genesis document
+        // NOTE: Could sum up withdrawal above, but for deposit need to run balanceValidation for sender first to (in-)validate documents
+        // Sum up Balance after Withdrawal - skip genesis document
         if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true && i != 0) {
             userBalance -= BigInt(documents[i].data.amount);
             console.log("index " + i + ": Withdrawal - Balance for " + identityId + " is " + userBalance)
@@ -406,58 +405,7 @@ const balanceOf = function (identityId) {
 }
 
 
-// Not used atm - optimised approach for index processing.
-const processIndexOpt = function (identityId) {
-
-    let lenDocs = documents.length;
-
-    // search last withdraw from identityId
-    for (let i = lenDocs - 1; i >= 0; i--) {
-
-        if (documents[i].ownerId.toString() == identityId && mapDocuments[i] == true) {
-            console.log("index " + i + ": Found last withdrawal from this identityId")
-            mapWithdraw.push(i);
-            // break;   // dont break, calc all withdrawals for transfer history
-        }
-    }
-
-    // search last deposits to this identityId 
-    for (let i = lenDocs - 1; i > mapWithdraw[0]; i--) {  // process only since last withdraw (optimization)
-        console.log(i)
-        console.log(documents[i].data.recipient)
-        if (documents[i].data.recipient == identityId && mapDocuments[i] == true) {
-            mapDeposit.push(i);
-            console.log("index " + i + ": Found last valid deposit since last withdraw for this identityId")
-        }
-        // last withdrawal reached, set lastDeposit value from prev document (optimization)
-        if (i == mapWithdraw[0]) {
-            mapDeposit.push(documents[i].data.lastValIndTransferFrom);
-            console.log("Adding last valid deposit value from last withdraw document " + documents[i].data.lastValIndTransferFrom)
-        };
-    }
-
-    // TODO: check, probably redundant - only valid document indexes are pushed to mapWithdraw
-    // perhaps got to do with the optimisation algo ... but only withdrawals are checked -> doesnt make sense atm
-    // search through indexes for invalid docTX
-    // let curLastDocTX = mapWithdraw[0];
-    // console.log(curLastDocTX)
-    // for (let i = lenDocs - 1; i >= 0; i--) {
-    //     if (i == curLastDocTX) {
-    //         if (!isValidDoc[i]) {
-    //             console.log("invalid docTX found at index " + i)
-    //             console.dir(documents[i])
-    //             break;
-    //         }
-    //         curLastDocTX = documents[i].data.lastValIndTransfer;
-    //     }
-    //     if (i == 0) {
-    //         console.log("finished searching for invalid docTX - no results found!")
-    //     }
-    // }
-}
-
-// Probably just remove all index processing since its not adding extra security (as planned)
-// not used for validation, could be removed (keep until sure)
+// not used for validation, could be removed
 const processIndex = function (identityId) {
 
     let lenDocs = documents.length;
@@ -484,23 +432,23 @@ const processIndex = function (identityId) {
 
 const processDocumentChain = async function (tokenContractId, identityId) {
 
-    if(tokenContractId == "") {
+    if (tokenContractId == "") {
         console.log("ERROR: Insert Contract id")
         return;
     }
-    if(identityId == "") {
+    if (identityId == "") {
         console.log("ERROR: Insert Identity id")
         return;
     }
 
     console.log("++++ Fetching all Documents:")
     documents = await getDocumentChain(tokenContractId);
-    if(documents == null) {return}
+    if (documents == null) { return }
     console.log("++++ Fetched " + documents.length + " documents")
 
     console.log("++++ Processing valid Documents:")
     mapDocuments = getDocumentChainMap(documents);
-    console.log("++++ Valid document amount is " + mapDocuments.filter(x => x==true).length );    // TODO: comment for production
+    console.log("++++ Valid document amount is " + mapDocuments.filter(x => x == true).length);    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)
     accBalance = balanceOf(identityId);
