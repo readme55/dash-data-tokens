@@ -110,7 +110,7 @@
 
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="inputGroup-sizing-lg">Initial Token Supply &nbsp;</span>
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Initial Supply &nbsp;</span>
                         </div>
                         <input class="form-control form-control-lg mr-5" type="text" aria-label="Amount" value=""
                             id="formTokenAmount" placeholder="1000">
@@ -141,7 +141,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text" id="inputGroup-sizing-lg">Balance &nbsp;</span>
                     </div>
-                    <input class="form-control form-control-lg" type="text" id="formBalance" rows="1"><br>
+                    <input class="form-control form-control-lg" type="text" id="formBalance" rows="1" readonly=true><br>
                     <!-- readonly=true -->
                     <div class="input-group-append">
                         <span class="input-group-text" id="formAppendTokenSymbol1"> </span>
@@ -154,9 +154,9 @@
 
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <span class="input-group-text" id="inputGroup-sizing-lg">Transfer to Identity &nbsp;</span>
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Transfer to &nbsp;</span>
                     </div>
-                    <input class="form-control form-control-lg" type="text" id="formWithdrawUser" rows="1"><br>
+                    <input class="form-control form-control-lg" type="text" id="formWithdrawUser" rows="1" placeholder="Username"><br>
                 </div>
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
@@ -170,7 +170,7 @@
                 
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <span class="input-group-text" id="inputGroup-sizing-lg">Attach Data (optional) &nbsp;</span>
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Message (optional) &nbsp;</span>
                     </div>
                     <input class="form-control form-control-lg" type="text" id="formSendData" rows="1"><br>
                 </div>
@@ -189,9 +189,9 @@
 
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <span class="input-group-text" id="inputGroup-sizing-lg">Identity Explorer &nbsp;</span>
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Account Explorer &nbsp;</span>
                     </div>
-                    <input class="form-control form-control-lg" type="text" id="formIdentity" rows="1"><br>
+                    <input class="form-control form-control-lg" type="text" id="formIdentity" rows="1" placeholder="Username"><br>
                     <!-- readonly=true -->
                 </div>
                 <button id="searchBtn" type="button" class="btn btn-primary btn-lg">Search</button>
@@ -200,9 +200,9 @@
 
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <span class="input-group-text" id="inputGroup-sizing-lg">Total Supply &nbsp;</span>
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Total Supply On-Chain &nbsp;</span>
                     </div>
-                    <input class="form-control form-control-lg" type="text" id="formTotalSupply" rows="1"><br>
+                    <input class="form-control form-control-lg" type="text" id="formTotalSupply" rows="1" readonly=true><br>
                     <div class="input-group-append">
                         <span class="input-group-text" id="formAppendTokenSymbol3"> </span>
                     </div>
@@ -224,6 +224,7 @@
     <script src="./assets/js/localforage.js"></script>
     <script src="./credentials.js"></script>
     <script src="./sds-lib.js"></script>
+    <script src="./token-contract.js"></script>
     <script src="./token-lib.js"></script>
     <script src="./token-ui-lib.js"></script>
     <script src="./token-dapp.js"></script>

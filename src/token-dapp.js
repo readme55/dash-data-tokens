@@ -153,13 +153,13 @@ $(document).ready(function () {
         const tokenSymbol = $("#formTokenSymbol").val();
         const tokenDecimals = parseInt($("#formTokenDecimals").val());
         const tokenSender = identityId;
-        const tokenRecipient = $("#formWithdrawUser").val().trim();
+        const tokenRecipient = await resolveIdentity($("#formWithdrawUser").val().trim());
         const tokenAmount = fromUserRep($("#formSendAmount").val()).toString();
         const tokenOwner = identityId;
         const tokenBalance = fromUserRep($("#formBalance").val()).toString();
         const tokenData = $("#formSendData").val();
 
-        console.log(tokenRecipient)
+        console.log("Recipient: " + tokenRecipient)
 
         const contractTxJson = {
             version: tokenVersion,
@@ -190,7 +190,7 @@ $(document).ready(function () {
         $("#searchBtn").prop('disabled', true);
 
         const tokenContractId = $("#formTokenContract").val().trim();
-        const exploreIdentity = $("#formIdentity").val().trim();
+        const exploreIdentity = await resolveIdentity($("#formIdentity").val().trim());
 
         await processDocumentChain(tokenContractId, exploreIdentity);
 

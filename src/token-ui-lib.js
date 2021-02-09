@@ -89,7 +89,6 @@ const fromUserRep = function(strNumber, decimals) {
     if (strNumber == undefined) return undefined;
     let parts = strNumber.split(".");
 
-    
     if(parts[1] == undefined) {
         parts[1] = '';
     }
@@ -98,4 +97,25 @@ const fromUserRep = function(strNumber, decimals) {
     let resBigInt = BigInt( parts[0] + parts[1] + "0".repeat(8-decimalLen) );
 
     return resBigInt;
+}
+
+const resolveIdentity = async function(username) {
+    let doc;
+    try {
+        doc = await client.platform.names.resolve(username.toLowerCase() + '.dash');
+    } catch (e) {
+        console.error('Something went wrong:', e);
+    }
+    return doc.data.records.dashUniqueIdentityId.toString();
+}
+
+const resolveUsername = async function(identityId) {
+    let doc;
+    try {
+        doc = await client.platform.names.resolveByRecord('dashUniqueIdentityId', identityId);
+    } catch (e) {
+        console.error('Something went wrong:', e);
+    }
+    return doc.data.label;
+
 }

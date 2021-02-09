@@ -9,106 +9,6 @@ let mapDocuments = [];    // boolean list mapping
 let mapWithdraw = [];
 let mapDeposit = [];
 
-// NOTE: Sender and Owner redundant to $ownerId. Check if perhaps needed for "transferFrom" ERC-20 method
-// balance property required in this implementation, but could be removed (runtime vs. security)
-// amount and balance with 78 decimals analogous to uint256
-
-const dataContractJson = {
-    token: {
-        indices: [
-            // {
-            //   "properties": [{ "txnr": "asc" }], "unique": true
-            // },
-            {
-                "properties": [{ "$ownerId": "asc" }], "unique": false
-            },
-            {
-                "properties": [{ "$createdAt": "asc" }], "unique": false
-            },
-            {
-                "properties": [{ "sender": "asc" }], "unique": false
-            },
-            {
-                "properties": [{ "recipient": "asc" }], "unique": false
-            },
-        ],
-        properties: {
-            version: {
-                type: "integer"
-            },
-            name: {
-                type: "string",
-                minLength: 1,
-                maxLength: 20,
-                pattern: "^[a-zA-Z0-9 ]+$"
-            },
-            symbol: {
-                type: "string",
-                minLength: 1,
-                maxLength: 5,
-                pattern: "^[a-zA-Z0-9]+$"
-
-            },
-            decimals: {
-                type: "integer"
-            },
-            // totalSupply: {
-            //     type: "integer"
-            // },
-            sender: {
-                type: "string",
-                minLength: 42,
-                maxLength: 44,
-                pattern: "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$"
-            },
-            recipient: {
-                type: "string",
-                minLength: 42,
-                maxLength: 44,
-                pattern: "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$"
-
-            },
-            amount: {
-                type: "string",
-                minLength: 1,
-                maxLength: 78,
-                pattern: "^[0123456789]+$"
-            },
-            owner: {
-                type: "string",
-                minLength: 42,
-                maxLength: 44,
-                pattern: "^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$"
-            },
-            // txnr: {
-            //     type: "integer",
-            //     "maxLength": 20
-            // },
-            balance: {
-                type: "string",
-                minLength: 1,
-                maxLength: 78,
-                pattern: "^[0123456789]+$"
-            },
-            data: {
-                type: "string",
-            },
-            lastValIndTransfer: {
-                type: "integer",
-                // minLength: 1,
-                maxLength: 5
-            },
-            lastValIndTransferFrom: {
-                type: "integer",
-                // minLength: 1,
-                maxLength: 5
-            },
-        },
-        required: ["$createdAt", "$updatedAt", "name", "symbol", "decimals", "sender", "recipient", "amount"],
-        additionalProperties: false
-    }
-};
-
 
 const createTokenContract = async function (dappname, username) {
 
@@ -197,7 +97,9 @@ const totalSupply = function () {
 
     // fetch balance for each identity and sum up
     for (let i = 0; i < accounts.length; i++) {
-        totalSupply += balanceOf(accounts[i]);
+        let balance = balanceOf(accounts[i]);
+        totalSupply += balance;
+        console.log("Account " + accounts[i] + " balance is " + balance)
     }
 
     console.log("Total Supply: " + totalSupply);
@@ -330,7 +232,7 @@ const getDocumentChainMap = function (documents) {
 }
 
 
-// recursion method. process accounts that are connected (deposit/withdraw) with the given identity-account.
+// recursive method. process accounts that are connected (deposit/withdraw) with the given identity-account and (in-)validate
 const balanceValidation = function (identityId, userBalance, procAccounts) {
 
     let lenDocs = documents.length;
@@ -344,7 +246,7 @@ const balanceValidation = function (identityId, userBalance, procAccounts) {
         // console.log("index " + i + " document owner is " + procIdentityId)   // uncomment for debug (opt potential)
         // if document is owned by user identity
         if (procIdentityId == identityId) {    // if withdrawal (or TODO approval)
-            if (userBalance == BigInt(documents[i].data.balance)) {
+            if (userBalance == BigInt(documents[i].data.balance)) { // if user balance matches sumed up history
                 // console.log("index " + i + " Validate: TRUE (balance validated " + userBalance + " tokens)")
             } else {
                 mapDocuments[i] = false;
@@ -354,7 +256,7 @@ const balanceValidation = function (identityId, userBalance, procAccounts) {
             if (procAccounts.indexOf(identityId) == -1) {
                 procAccounts.push(identityId);
             }
-            // else document is from other identity
+        // else document is from other identity
         } else if (procAccounts.indexOf(procIdentityId) == -1) {
             balanceValidation(procIdentityId, 0n, procAccounts);    // start processing for this identity before continuing (bc need to validate this one first)
             procAccounts.push(procIdentityId);
