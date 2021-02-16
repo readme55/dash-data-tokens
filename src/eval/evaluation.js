@@ -11,6 +11,7 @@ let submitText = document.getElementById('submitText');
 // { identity: '14c3vc1qdsCgfPNVkxnZuJJyibAx4aQGsQPtUhkrStVt' }
 // contractID: mA1kafwtR8HGoZamz72fmUWGGXKjDFLqmirtZbJYYoT
 
+// get byte size of object
 const typeSizes = {
   "undefined": () => 0,
   "boolean": () => 4,
@@ -20,7 +21,6 @@ const typeSizes = {
     .keys(item)
     .reduce((total, key) => sizeOf(key) + sizeOf(item[key]) + total, 0)
 };
-
 const sizeOf = value => typeSizes[typeof value](value);
 
 
@@ -39,18 +39,18 @@ submitBtn.addEventListener('click', function () {
 
   client.getApps().set("tokenContract", { "contractId": 'DY6KmhAsLqrkTxJWA7KAJA3vR4wHhExHqSYXLWitdxuu' });
   const platform = client.platform;
-  
+  let cnt = 1;
 
-  const submitNoteDocument = async function () {
+  const submitEvalDocuments = async function () {
 
     try {
       // const account = await client.getWalletAccount();
       const identity = await client.platform.identities.get(dappIdentityId);
 
-      docProperties = {
+      const docProperties = {
           version: 1,
           name: 'Evaluation',
-          symbol: 'eva5',
+          symbol: 'eva7',
           decimals: 8,
           sender: dappIdentityId,   
           recipient: dappIdentityId,    // dapp login user identityId
@@ -89,29 +89,46 @@ submitBtn.addEventListener('click', function () {
 
       var start = new Date().getTime();
 
-      for (m = 0; m < 20; m++) {
-        console.log("ROUND " + m)
+      for (m = 0; m < 500; m++) {
+        console.log("ROUND " + cnt)
+        cnt++;
 
         for (i = 0; i < 3; i++) {
 
-          let noteDocument1 = await platform.documents.create(
+          let docEval = await platform.documents.create(
             'tokenContract.token',
             identity,
             docProperties,
           );
+          
+          // ST size test:
+          // let doc = await client.platform.names.resolve('readme.dash');  // dpns doc
+          // let doc = docEval; // token doc
+
+          // console.dir(doc)
+          // console.dir(doc.data)
+          // console.dir(doc.toJSON())
+          // // console.dir(doc[0].data)
+          // console.log("size bytes dpns doc " + sizeOf(doc))
+          // console.log("size bytes dpns doc .data " + sizeOf(doc.data))
+          // console.log("size bytes dpns doc .toJSON() " + sizeOf(doc.toJSON()))
+          // console.log("size bytes dpns doc .toBuffer()" + sizeOf(doc.toBuffer()))
+          
+          // console.log("size bytes dpns document " + sizeOf(doc[0].data))
+          // console.log("size bytes document.toBuffer() " + sizeOf(doc[0].data.toBuffer()))
 
           // console.log(documentBatch['create'][0].data.symbol)
-          documentBatch['create'][i] = noteDocument1;
+          documentBatch['create'][i] = docEval;
           // documentBatch['replace'][i] = '';
           // documentBatch['delete'][i] = '';
         }
 
         // get size
-        console.log(sizeOf(documentBatch))
+        console.log("Size: " + sizeOf(documentBatch))
 
         // Sign and submit the document
         await platform.documents.broadcast(documentBatch, identity);
-        console.log("fin")
+        // console.log("fin")
       }
       var end = new Date().getTime();
       var time = end - start;
@@ -120,20 +137,15 @@ submitBtn.addEventListener('click', function () {
     } catch (e) {
       console.error('Something went wrong:', e);
     } finally {
-      console.log("submited login document with message: " + submitText.value)
+      console.log("RESTART")
+      submitEvalDocuments();
+
       // client.disconnect();
     }
   };
-  submitNoteDocument();
+  submitEvalDocuments();
   submitBtn.disabled = false;
   console.log("done")
 
 }, false);
-
-
-
-
-
-
-
 
