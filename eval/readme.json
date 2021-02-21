@@ -1,0 +1,18 @@
+{
+    "$protocolVersion": 0,
+    "$id": "G9DYoGUhz1Zcqwnv7UAp11Ft4tEYFL5f6i3t3vudjZU2",
+    "$type": "domain",
+    "$dataContractId": "36ez8VqoDbR8NkdXwFaf9Tp8ukBdQxN8eYs8JNMnUyKz",
+    "$ownerId": "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE",
+    "$revision": 1,
+    "label": "readme",
+    "records": {
+      "dashUniqueIdentityId": "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"
+    },
+    "preorderSalt": "5XSXZ6SsPcOisikMuocHov6i4LFqWHQU3w1VjtaiwM4=",
+    "subdomainRules": {
+      "allowSubdomains": false
+    },
+    "normalizedLabel": "readme",
+    "normalizedParentDomainName": "dash"
+  },

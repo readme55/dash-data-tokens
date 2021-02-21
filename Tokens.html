@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="generator" content="">
+    <title>Dash Platform Data Tokens</title>
+
+    <!-- <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/starter-template/"> -->
+
+    <!-- Bootstrap core CSS -->
+    <!-- <link href="./assets/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+    <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <style>
+        body {
+            background-image: url("./assets/img/jonas-leupe-0IVop5v4MMU-unsplash.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .container {
+            background: rgb(255, 255, 255);
+            opacity: 0.95;
+        }
+
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+    <!-- Custom styles for this template -->
+    <link href="starter-template.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Dash Platform Data Tokens</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="./index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="./Tokens.html">Data-Tokens<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="./index.html">Voting</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="./index.html">Dao</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+
+                <input id="signinbutton" class="btn btn-success my-2 my-sm-0" type="button" value="Sign in"
+                    onclick="location.href='./Sign-in.html';">
+            </form>
+        </div>
+    </nav>
+
+    <main role="main" class="container">
+
+        <div class="starter-template">
+            <h1>Data-Token Manager</h1>
+            <p class="lead">Create a New Token, Manage your Token Ownership or Explore any Token Contract
+                <!-- <a href="https://github.com/readme55/Dash-Chrome-Wallet" target="_blank">Chrome Wallet</a> -->
+                <br>
+            <form>
+                <div class="form-group">
+                    <br>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Token Contract &nbsp;</span>
+                        </div>
+                        <input class="form-control form-control-lg" type="text" id="formTokenContract" rows="1"><br>
+                    </div>
+                    <br>
+                    <br>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Token Name &nbsp;</span>
+                        </div>
+                        <input class="form-control form-control-lg mr-5" type="text" id="formTokenName" rows="1" placeholder="myToken"><br>
+
+                        <div class="input-group-prepend ml-5">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Token Symbol &nbsp;</span>
+                        </div>
+                        <input class="form-control form-control-lg" type="text" id="formTokenSymbol" rows="1" placeholder="TOK"><br>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Initial Supply &nbsp;</span>
+                        </div>
+                        <input class="form-control form-control-lg mr-5" type="text" aria-label="Amount" value=""
+                            id="formTokenAmount" placeholder="1000">
+                        <!-- example add text at the right of input -->
+                        <!-- <div class="input-group-append">
+                            <span class="input-group-text" id="inputGroup-sizing-lg"> </span>
+                        </div> -->
+                        <div class="input-group-prepend ml-5">
+                            <span class="input-group-text" id="inputGroup-sizing-lg">Number of Decimals &nbsp;</span>
+                        </div>
+                        <input class="form-control form-control-lg" type="text" value="" id="formTokenDecimals" placeholder="8">
+                    </div>
+
+                </div>
+
+                <button id="createBtn" type="button" class="btn btn-primary btn-lg">Create Token Contract</button>
+                <button id="initBtn" type="button" class="btn btn-primary btn-lg">Mint Initial Token Supply</button>
+                <br>
+                <br>
+
+                <!-- <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Token Contract &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formTokenContract2" rows="1"><br>
+                </div> -->
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Balance &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formBalance" rows="1" readonly=true><br>
+                    <!-- readonly=true -->
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="formAppendTokenSymbol1"> </span>
+                    </div>
+                </div>
+
+                <button id="receiveBtn" type="button" class="btn btn-primary btn-lg">Get Account Balance</button>
+                <br>
+                <br>
+
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Transfer to &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formWithdrawUser" rows="1" placeholder="Username"><br>
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Amount &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formSendAmount" rows="1"><br>
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="formAppendTokenSymbol2"> </span>
+                    </div>
+                </div>
+                
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Message (optional) &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formSendData" rows="1"><br>
+                </div>
+
+                <button id="sendBtn" type="button" class="btn btn-primary btn-lg">Send Tokens</button>
+                <br>
+                <br>
+
+                <div class="input-group-prepend">
+                    <span class="form-control-plaintext form-control-lg" id="labelTransferHistory">Transfer History &nbsp;</span>
+                </div>
+                <textarea class="form-control form-control-lg" id="formHistoryOutput" rows="10" placeholder="" required disabled
+                    style="background-color: white;font-size:0.9em;"></textarea>
+                <!-- <input class="form-control form-control-lg" type="text" id="formTransferHistory" rows="10" ><br> -->
+                <br>
+
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Account Explorer &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formIdentity" rows="1" placeholder="Username"><br>
+                    <!-- readonly=true -->
+                </div>
+                <button id="searchBtn" type="button" class="btn btn-primary btn-lg">Search</button>
+                <br>
+                <br>
+
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="inputGroup-sizing-lg">Total Supply On-Chain &nbsp;</span>
+                    </div>
+                    <input class="form-control form-control-lg" type="text" id="formTotalSupply" rows="1" readonly=true><br>
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="formAppendTokenSymbol3"> </span>
+                    </div>
+                </div>
+                <button id="totalSupplyBtn" type="button" class="btn btn-primary btn-lg">Validate Total Supply</button>
+                <br>
+
+            </form>
+        </div> <!-- /container -->
+
+        </div>
+
+    </main><!-- /.container -->
+
+    <script src="./assets/js/jquery-slim.min.js"></script>
+    <script>window.jQuery || document.write('<script src="./assets/js/jquery-slim.min.js"><\/script>')</script>
+    <script src="./assets/js/bootstrap.bundle.min.js"></script>
+    <script src="./assets/js/dash.min.js"></script>
+    <script src="./assets/js/localforage.js"></script>
+    <script src="./credentials.js"></script>
+    <script src="./sds-lib.js"></script>
+    <script src="./token-contract.js"></script>
+    <script src="./token-lib.js"></script>
+    <script src="./token-ui-lib.js"></script>
+    <script src="./token-dapp.js"></script>
+</body>
+
+</html>

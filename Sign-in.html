@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="generator" content="">
+  <title>Dash Platform - Sign-In</title>
+
+  <!-- <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/sign-inS/"> -->
+
+  <!-- Bootstrap core CSS -->
+  <!-- <link href="./assets/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+  <link href="./assets/css/bootstrap.min.css" rel="stylesheet">
+
+
+  <style>
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+  </style>
+  <!-- Custom styles for this template -->
+  <link href="./signin.css" rel="stylesheet">
+</head>
+
+<body class="text-center">
+
+  <form class="form-signin">
+    <!-- <img class="mb-4" src="./assets/img/blue-d.svg" alt="" width="72" height="72"> -->
+    <img class="mb-4" src="./assets/img/dash-d-rounded-square.svg" alt="" width="72" height="72">
+    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+    <label for="inputEmail" class="sr-only">Dash Username</label>
+    <input type="email" id="inputUsername" class="form-control" placeholder="Dash Username" required autofocus>
+    <label for="inputPassword" class="sr-only">PIN</label>
+    <!-- <input type="password" id="inputPassword" class="form-control" placeholder="PIN" required> -->
+    <input type="password" id="inputPassword" class="form-control" placeholder="PIN" readonly>
+    <div class="checkbox mb-3">
+      <label>
+        <!-- <input type="checkbox" value="remember-me"> Remember me -->
+        <input type="checkbox" value="remember-me" disabled> Remember me
+      </label>
+    </div>
+    <!-- <button id="submitBtn" class="btn btn-lg btn-primary btn-block" type="button" onclick="location.href='./index.html';">Sign in</button> -->
+    <button id="submitBtn" class="btn btn-lg btn-primary btn-block" type="button">Sign in</button>
+    <button class="btn btn-outline-danger btn-block" type="button" onclick="location.href='./index.html';">Abort</button>
+
+    <!-- <p class="mt-5 mb-3 text-muted">&copy; readme 2020</p> -->
+    <p class="mt-5 mb-3 text-muted">&nbsp;</p>
+  </form>
+  <script src="./assets/js/jquery-slim.min.js"></script>
+  <script src="./assets/js/dash.min.js"></script>
+  <script src="./assets/js/localforage.js"></script>
+  <script src="./credentials.js"></script>
+  <script src="./signin.js"></script>
+</body>
+
+</html>
