@@ -73,10 +73,10 @@ const getTxHistory = async function (identityId, documents, mapDocuments, accBal
     }
 
     // write history output
-    historyOutput += "Nr:    Type     |    Amount    |    Balance    | Valid |                                Sender                                 |                                  Recipient                                |   Message         \n"
+    historyOutput += "Nr:    Type     |        Amount        |        Balance        |   Valid   |      Sender      |      Recipient      |   Message         \n"
     for (let i = historyTx.length - 1; i >= 0; i--) {
         // historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
-        historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].senderUser + " | " + historyTx[i].recipientUser + " | " + historyTx[i].data + '\n')
+        historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " |   " + historyTx[i].senderUser + "   |   " + historyTx[i].recipientUser + "   | " + historyTx[i].data + '\n')
     }
 
     return historyOutput;

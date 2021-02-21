@@ -16,7 +16,7 @@ $(document).ready(function () {
     let identityId = sessionStorage.getItem('dash_identityID');
     // let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // static for testing
 
-     $("#formTokenContract").val("DY6KmhAsLqrkTxJWA7KAJA3vR4wHhExHqSYXLWitdxuu");    // Token Contract static for testing, comment to disable
+     $("#formTokenContract").val(funToken);    // Token Contract static for testing, comment to disable
 
     // set buttons after load
     $("#receiveBtn").prop('disabled', true);
