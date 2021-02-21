@@ -10,6 +10,8 @@ const getTxHistory = async function (identityId, documents, mapDocuments, accBal
     let historyValid = [];      // list of booleans
     let historyBalance = [];    // list of strings - balance converted to user representation
     let historyOutput = '';     // result - html output string
+    let mapIdentity = [];
+    let mapUsername = [];
 
     // TODO: optimise with query instead of iterating through all documents
     // let queryTxHistory = {
@@ -47,10 +49,34 @@ const getTxHistory = async function (identityId, documents, mapDocuments, accBal
         }
     }
 
+    //create mapping and resolve username for all account interactions
+    mapIdentity.push('111111111111111111111111111111111111111111')
+    mapUsername.push('zeroAddress')
+    for (let i=0; i<historyTx.length; i++) {
+        let indSender = mapIdentity.indexOf(historyTx[i].sender);
+        let indRecipient = mapIdentity.indexOf(historyTx[i].recipient);
+        if (indSender == -1) {
+            mapIdentity.push(historyTx[i].sender)
+            mapUsername.push(await resolveUsername(historyTx[i].sender))
+        }
+        if (indRecipient == -1) {
+            mapIdentity.push(historyTx[i].recipient)
+            mapUsername.push(await resolveUsername(historyTx[i].recipient))
+        }
+
+    }
+
+    // translate identity to username and add entry to historyTx
+    for (let i=0; i<historyTx.length; i++) {
+        historyTx[i].senderUser = mapUsername[mapIdentity.indexOf(historyTx[i].sender)];
+        historyTx[i].recipientUser = mapUsername[mapIdentity.indexOf(historyTx[i].recipient)];
+    }
+
     // write history output
     historyOutput += "Nr:    Type     |    Amount    |    Balance    | Valid |                                Sender                                 |                                  Recipient                                |   Message         \n"
     for (let i = historyTx.length - 1; i >= 0; i--) {
-        historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
+        // historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
+        historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].senderUser + " | " + historyTx[i].recipientUser + " | " + historyTx[i].data + '\n')
     }
 
     return historyOutput;
@@ -116,6 +142,5 @@ const resolveUsername = async function(identityId) {
     } catch (e) {
         console.error('Something went wrong:', e);
     }
-    return doc.data.label;
-
+    return doc[0].data.label;
 }

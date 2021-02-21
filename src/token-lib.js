@@ -339,7 +339,7 @@ const processDocumentChain = async function (tokenContractId, identityId) {
         return;
     }
 
-    console.log("++++ Fetching all Documents:")
+    console.log("++++ Fetching Token Documents:")
     documents = await getDocumentChain(tokenContractId);
     if (documents == null) { return }
     console.log("++++ Fetched " + documents.length + " documents")
