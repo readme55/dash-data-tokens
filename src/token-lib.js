@@ -356,5 +356,5 @@ const processDocumentChain = async function (tokenContractId, identityId) {
     mapWithdraw = [];
     mapDeposit = [];
     processIndex(identityId);
-
+    console.log("++++ Finish Processing")
 }
