@@ -1,27 +1,5 @@
 let submitBtn = document.getElementById('submitBtn');
 let submitText = document.getElementById('submitText');
-// let submitText = document.getElementById('submitText');
-// let submitText = document.getElementById('submitText');
-// let submitText = document.getElementById('submitText');
-
-// Mnemonic: toddler repair print phrase crouch curve charge typical swap bachelor outer upgrade
-// { user identity: 'DUxf95cCdPTor7BfWMXmr2VmHQqdKMPQv6fauecy7Wuy' }
-// name: dappuser
-// identityID used for the messageContract:
-// { identity: '14c3vc1qdsCgfPNVkxnZuJJyibAx4aQGsQPtUhkrStVt' }
-// contractID: mA1kafwtR8HGoZamz72fmUWGGXKjDFLqmirtZbJYYoT
-
-// get byte size of object
-const typeSizes = {
-  "undefined": () => 0,
-  "boolean": () => 4,
-  "number": () => 8,
-  "string": item => 2 * item.length,
-  "object": item => !item ? 0 : Object
-    .keys(item)
-    .reduce((total, key) => sizeOf(key) + sizeOf(item[key]) + total, 0)
-};
-const sizeOf = value => typeSizes[typeof value](value);
 
 
 submitBtn.addEventListener('click', function () {
@@ -87,7 +65,8 @@ submitBtn.addEventListener('click', function () {
         delete: [],
       }
 
-      var start = new Date().getTime();
+      // var start = new Date().getTime();
+      var start = recordTime();
 
       for (m = 0; m < 500; m++) {
         console.log("ROUND " + cnt)
@@ -130,8 +109,9 @@ submitBtn.addEventListener('click', function () {
         await platform.documents.broadcast(documentBatch, identity);
         // console.log("fin")
       }
-      var end = new Date().getTime();
-      var time = end - start;
+      // var end = new Date().getTime();
+      var end = recordTime();
+      var time = deltaTime(start, end)
       console.log("RUNTIME " + time)
 
     } catch (e) {

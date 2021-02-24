@@ -31,7 +31,7 @@ const getTxHistory = async function (identityId, documents, mapDocuments, accBal
         if (documents[i].data.sender == identityId) {
             historyTx.push(documents[i].data);
             historyType.push("Withdraw");
-            historyBalance.push( bigInt2strUser(accBalanceHistory[i], decimals) );
+            historyBalance.push( bigInt2strNum(accBalanceHistory[i], decimals) );
             if (mapDocuments[i]) {
                 historyValid.push(true);
             } else {
@@ -42,7 +42,7 @@ const getTxHistory = async function (identityId, documents, mapDocuments, accBal
         if (documents[i].data.recipient == identityId) {
             historyTx.push(documents[i].data);
             historyType.push("Deposit");
-            historyBalance.push( bigInt2strUser(accBalanceHistory[i], decimals) );
+            historyBalance.push( bigInt2strNum(accBalanceHistory[i], decimals) );
             if (mapDocuments[i]) {
                 historyValid.push(true);
             } else {
@@ -78,14 +78,19 @@ const getTxHistory = async function (identityId, documents, mapDocuments, accBal
     historyOutput += "Nr:    Type     |        Amount        |        Balance        |   Valid   |      Sender      |      Recipient      |   Message         \n"
     for (let i = historyTx.length - 1; i >= 0; i--) {
         // historyOutput += i + ":  " + (historyType[i] + " |   " + toUserRep(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " | " + historyTx[i].sender + " | " + historyTx[i].recipient + " | " + historyTx[i].data + '\n')
-        historyOutput += i + ":  " + (historyType[i] + " |   " + bigInt2strUser(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " |   " + historyTx[i].senderUser + "   |   " + historyTx[i].recipientUser + "   | " + historyTx[i].data + '\n')
+        historyOutput += i + ":  " + (historyType[i] + " |   " + bigInt2strNum(historyTx[i].amount, decimals) + "   |   " + historyBalance[i] + "   | " + historyValid[i].toString() + " |   " + historyTx[i].senderUser + "   |   " + historyTx[i].recipientUser + "   | " + historyTx[i].data + '\n')
     }
 
     return historyOutput;
 }
 
+
+const bigInt2str = function(bigInt) {
+    return bigInt.toString();
+}
+
 // from BigInt(value) to String with decimal shifted and set
-const bigInt2strUser = function(bigInt, decimals) {
+const bigInt2strNum = function(bigInt, decimals) {
 
     // Tests if value is truthy - using strict equality
     // assert.ok(typeof bigInt === 'bigint');
