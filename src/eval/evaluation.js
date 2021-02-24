@@ -87,14 +87,11 @@ submitBtn.addEventListener('click', function () {
           // console.dir(doc)
           // console.dir(doc.data)
           // console.dir(doc.toJSON())
-          // // console.dir(doc[0].data)
-          // console.log("size bytes dpns doc " + sizeOf(doc))
-          // console.log("size bytes dpns doc .data " + sizeOf(doc.data))
-          // console.log("size bytes dpns doc .toJSON() " + sizeOf(doc.toJSON()))
-          // console.log("size bytes dpns doc .toBuffer()" + sizeOf(doc.toBuffer()))
-          
-          // console.log("size bytes dpns document " + sizeOf(doc[0].data))
-          // console.log("size bytes document.toBuffer() " + sizeOf(doc[0].data.toBuffer()))
+          // console.log("size bytes doc sizeOf(doc) " + sizeOf(doc))
+          // console.log("size bytes doc sizeOf(doc.data) " + sizeOf(doc.data))
+          // console.log("size bytes doc sizeOf(doc.toJSON() " + sizeOf(doc.toJSON()))
+          // console.log("size bytes doc sizeOf(doc.toBuffer() " + sizeOf(doc.toBuffer()))
+          // fail;  
 
           // console.log(documentBatch['create'][0].data.symbol)
           documentBatch['create'][i] = docEval;
