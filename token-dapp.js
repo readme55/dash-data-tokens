@@ -7,14 +7,14 @@
 
 $(document).ready(function () {
 
-    let username = sessionStorage.getItem('dash_username');
-    // let username = "readme"; // static for testing
+    // let username = sessionStorage.getItem('dash_username');
+    let username = "readme"; // static for testing
     if (username != null) {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username);
     }
-    let identityId = sessionStorage.getItem('dash_identityID');
-    // let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // static for testing
+    // let identityId = sessionStorage.getItem('dash_identityID');
+    let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // static for testing
 
      $("#formTokenContract").val(funToken);    // Token Contract static for testing, comment to disable
 
@@ -119,15 +119,15 @@ $(document).ready(function () {
         $("#formTokenDecimals").val(decimals())
 
         // token amount and balance - divide by decimals to get user representation
-        $("#formTokenAmount").val( bigInt2strUser(initialSupply(), decimals()) );
-        $("#formBalance").val( bigInt2strUser(getAccBalance(), decimals()) );
+        $("#formTokenAmount").val( bigInt2strNum(initialSupply(), decimals()) );
+        $("#formBalance").val( bigInt2strNum(getAccBalance(), decimals()) );
 
         // TODO: move to "load contract" button
         document.getElementById("formAppendTokenSymbol1").innerHTML = symbol();
         document.getElementById("formAppendTokenSymbol2").innerHTML = symbol();
         document.getElementById("formAppendTokenSymbol3").innerHTML = symbol();
 
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + bigInt2strUser(getAccBalance(), decimals()) + " " + symbol() + ")";
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + identityId + " (" + bigInt2strNum(getAccBalance(), decimals()) + " " + symbol() + ")";
 
         $("#receiveBtn").prop('disabled', false);
 
@@ -196,9 +196,9 @@ $(document).ready(function () {
 
         $("#formTokenName").val(name())
         $("#formTokenSymbol").val(symbol())
-        $("#formTokenAmount").val( bigInt2strUser(initialSupply(), decimals()) )
+        $("#formTokenAmount").val( bigInt2strNum(initialSupply(), decimals()) )
         $("#formTokenDecimals").val(decimals())
-        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + bigInt2strUser(getAccBalance(), decimals()) + " " + symbol() + ")";
+        document.getElementById("labelTransferHistory").innerHTML = "Transfer History for " + exploreIdentity + " (" + bigInt2strNum(getAccBalance(), decimals()) + " " + symbol() + ")";
 
         let historyOutput = await getTxHistory(exploreIdentity, getDocuments(), getMapDocuments(), getAccBalanceHistory(), decimals());
         $("#formHistoryOutput").val(historyOutput)
@@ -214,7 +214,7 @@ $(document).ready(function () {
 
         // const tokenContractId = $("#formTokenContract").val().trim();
 
-        $("#formTotalSupply").val( bigInt2strUser(totalSupply(), decimals()) )
+        $("#formTotalSupply").val( bigInt2strNum(totalSupply(), decimals()) )
         $("#totalSupplyBtn").prop('disabled', false);
     });
 

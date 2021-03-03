@@ -128,6 +128,7 @@ const getDocumentChain = async function (tokenContractId) {
         // read in 100 document steps (limit) until all collected
         let nStart = 0;
         let len = 100;
+        // while (len == 100 && nStart <= 999) {    // evaluation
         while (len == 100) {
             let queryBasic = { startAt: nStart };
             let tmpDocuments = await client.platform.documents.get('tokenContract.token', queryBasic);
@@ -339,13 +340,20 @@ const processDocumentChain = async function (tokenContractId, identityId) {
         return;
     }
 
+    // let start, end;
     console.log("++++ Fetching Token Documents:")
+    // start = recordTime();    //evaluation
     documents = await getDocumentChain(tokenContractId);
     if (documents == null) { return }
+    // end = recordTime();
+    // console.log("TIME fetch: " + deltaTime(start,end))
     console.log("++++ Fetched " + documents.length + " documents")
 
     console.log("++++ Processing valid Documents:")
+    // start = recordTime();
     mapDocuments = getDocumentChainMap(documents);
+    // end = recordTime();
+    // console.log("TIME map: " + deltaTime(start,end))
     console.log("++++ Valid document amount is " + mapDocuments.filter(x => x == true).length);    // TODO: comment for production
 
     console.log("++++ Processing Account Balance for " + identityId)

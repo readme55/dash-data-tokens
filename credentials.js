@@ -5,5 +5,5 @@ const dappAddress = 'yMxELPfsPbn5UienyykyySLJ4TA3QQCqw5'
 const messageContractId = '3coTShwTvmKiySpwmDDzRJ9FGQx4RNLdawLttT9RNxXa';
 const dpnsContractID = '36ez8VqoDbR8NkdXwFaf9Tp8ukBdQxN8eYs8JNMnUyKz';
 const dashNetwork = 'testnet';
-const tokToken = 'DY6KmhAsLqrkTxJWA7KAJA3vR4wHhExHqSYXLWitdxuu';
+const evalToken = 'DY6KmhAsLqrkTxJWA7KAJA3vR4wHhExHqSYXLWitdxuu';
 const funToken = 'AvDumErCNn5Z6dgpDbBNemwyHLudFyyBgAiU1B5QrEMe';
