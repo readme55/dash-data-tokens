@@ -7,14 +7,14 @@
 
 $(document).ready(function () {
 
-    // let username = sessionStorage.getItem('dash_username');
-    let username = "readme"; // static for testing
+    let username = sessionStorage.getItem('dash_username');
+    // let username = "readme"; // static for testing
     if (username != null) {
         $("#signinbutton").removeClass('btn-success').addClass('btn-info');
         $("#signinbutton").val(username);
     }
-    // let identityId = sessionStorage.getItem('dash_identityID');
-    let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // static for testing
+    let identityId = sessionStorage.getItem('dash_identityID');
+    // let identityId = "5uvhMEpiCDLYA2oqTq3WHcxMb1QJQKMeYFSfFisuPFdE"  // static for testing
 
      $("#formTokenContract").val(funToken);    // Token Contract static for testing, comment to disable
 
